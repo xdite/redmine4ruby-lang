@@ -1,0 +1,13 @@
+development:
+  adapter: postgresql
+  database: redmine_development
+  host: /Users/yugui/local/var/run/postgresql
+  username: yugui
+  password:
+
+test:
+  adapter: postgresql
+  database: redmine_test
+  host: /Users/yugui/local/var/run/postgresql
+  username: yugui
+  password:
