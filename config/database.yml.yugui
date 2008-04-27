@@ -1,13 +1,13 @@
 development:
-  adapter: postgresql
+  adapter: mysql
   database: redmine_development
-  host: /Users/yugui/local/var/run/postgresql
+  socket: /Users/yugui/local/var/run/mysql5/mysqld.sock
   username: yugui
   password:
 
 test:
-  adapter: postgresql
+  adapter: mysql
   database: redmine_test
-  host: /Users/yugui/local/var/run/postgresql
+  socket: /Users/yugui/local/var/run/mysql5/mysqld.sock
   username: yugui
   password:

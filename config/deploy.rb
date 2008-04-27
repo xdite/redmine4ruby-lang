@@ -6,21 +6,26 @@ set :application, "redmine"
 # If you aren't deploying to /u/apps/#{application} on the target
 # servers (which is the default), you can specify the actual location
 # via the :deploy_to variable:
-set :deploy_to, "/var/www/redmine"
+set :deploy_to, "/export/home/yugui/redmine"
 
 
 # If you aren't using Subversion to manage your source code, specify
 # your SCM below:
 # set :scm, :subversion
 set :scm, :git
-set :repository, "/var/git/redmine.git"
+set :repository, "ssh://git.yugui.jp:422/var/git/redmine.git"
 set :branch, "master"
 set :git_shallow_clone, 1
-set :ssh_options, :port => 422
+set :deploy_via, :copy
+set :copy_compression, :zip
 
-role :app, "bts.yugui.jp"
-role :web, "bts.yugui.jp"
-role :db,  "bts.yugui.jp", :primary => true
+set :mongrel_conf, "#{current_path}/config/mongrel_cluster.yml"
+set :rake, "/opt/csw/bin/rake"
+set :mongrel_rails, "/opt/csw/bin/mongrel_rails"
+
+role :app, "redmine.ruby-lang.org"
+role :web, "redmine.ruby-lang.org"
+role :db,  "redmine.ruby-lang.org", :primary => true
 
 
 task :init_database_config, :only => "app" do
@@ -36,7 +41,7 @@ end
 after 'deploy:setup', :init_database_config
 task :configure_database, :only => "app" do
   run <<-EOS
-    cd #{release_path}/config && ln -sf /var/www/redmine/shared/config/database.yml .
+    cd #{release_path}/config && ln -sf #{deploy_to}/shared/config/database.yml .
   EOS
 end
 after 'deploy:update_code', :configure_database
