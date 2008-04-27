@@ -20,8 +20,8 @@ set :deploy_via, :copy
 set :copy_compression, :zip
 
 set :mongrel_conf, "#{current_path}/config/mongrel_cluster.yml"
+set :mongrel_rails, "env PATH=$PATH:/opt/csw/bin mongrel_rails"
 set :rake, "/opt/csw/bin/rake"
-set :mongrel_rails, "/opt/csw/bin/mongrel_rails"
 
 role :app, "redmine.ruby-lang.org"
 role :web, "redmine.ruby-lang.org"

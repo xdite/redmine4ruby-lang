@@ -1,4 +1,5 @@
 --- 
+cwd: /export/home/yugui/redmine/current
 log_file: log/mongrel.log
 port: "6001"
 environment: production
