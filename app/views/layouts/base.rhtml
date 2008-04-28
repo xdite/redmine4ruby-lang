@@ -36,7 +36,14 @@
         <%= render :partial => 'layouts/project_selector' if User.current.memberships.any? %>
     </div>
     
-    <h1><%=image_tag "ruby-logo.png", :alt => "Programming Language Ruby: ", :id => "ruby-logo" %> <%= h(@project ? @project.name : Setting.app_title) %></h1>
+    <h1>
+      <%=image_tag "ruby-logo.png", :alt => "Programming Language Ruby: ", :id => "ruby-logo" %> 
+      <%- if @project -%>
+      <%= link_to h(@project.name), :controller => "projects", :id => @project, :action => 'show'%>
+      <%- else -%>
+      <%= link_to Setting.app_title, '/' %>
+      <%- end -%>
+    </h1>
     
     <div id="main-menu">
         <%= render_main_menu(@project) %>
