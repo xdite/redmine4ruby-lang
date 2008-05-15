@@ -87,6 +87,10 @@ module RepositoriesHelper
       content_tag('p', form.text_field(:url, :label => 'Path to .git directory', :size => 60, :required => true, :disabled => (repository && !repository.root_url.blank?)))
   end
 
+  def github_field_tags(form, repository)
+      content_tag('p', form.text_field(:url, :label => 'Public clone URL', :size => 60, :required => true, :disabled => (repository && !repository.root_url.blank?)))
+  end
+
   def cvs_field_tags(form, repository)
       content_tag('p', form.text_field(:root_url, :label => 'CVSROOT', :size => 60, :required => true, :disabled => !repository.new_record?)) +
       content_tag('p', form.text_field(:url, :label => 'Module', :size => 30, :required => true, :disabled => !repository.new_record?))
