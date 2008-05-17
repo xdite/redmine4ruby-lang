@@ -14,3 +14,6 @@ config.action_controller.consider_all_requests_local = true
 config.action_controller.perform_caching             = false
 
 config.action_mailer.delivery_method = :test
+
+require 'ruby-debug'
+::Debugger.start
