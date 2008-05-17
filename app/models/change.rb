@@ -19,4 +19,16 @@ class Change < ActiveRecord::Base
   belongs_to :changeset
   
   validates_presence_of :changeset_id, :action, :path
+
+  # relative path from changeset.repository.url
+  def relative_path
+    @relataive_path ||=
+      unless path.starts_with?('/')
+        path
+      else
+        repos = changeset.repository
+        abs_url = URI.parse("#{repos.root_url}#{path}")
+        abs_url.route_from(repos.url)
+      end
+  end
 end
