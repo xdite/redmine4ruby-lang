@@ -1,0 +1,3 @@
+#!/opt/csw/bin/ruby
+require File.join(File.dirname(__FILE__), '..', 'config', 'environment')
+Repository.fetch_changesets
