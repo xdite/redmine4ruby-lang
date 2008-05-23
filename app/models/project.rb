@@ -37,6 +37,8 @@ class Project < ActiveRecord::Base
   has_one :repository, :dependent => :destroy
   has_many :changesets, :through => :repository
   has_one :wiki, :dependent => :destroy
+  has_many :mailing_list_trackings
+  has_many :mailing_lists, :through => :mailing_list_trackings
   # Custom field for the project issues
   has_and_belongs_to_many :custom_fields, 
                           :class_name => 'IssueCustomField',

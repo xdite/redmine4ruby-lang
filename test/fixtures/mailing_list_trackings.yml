@@ -1,0 +1,11 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+projects_001_tracks_ruby_dev:
+  project_id: 1
+  mailing_list_id: 1
+  project_selector_pattern: trunk
+
+projects_001_tracks_ruby_core:
+  project_id: 1
+  mailing_list_id: 2
+  project_selector_pattern: trunk

@@ -19,6 +19,7 @@ require File.dirname(__FILE__) + '/../test_helper'
 
 class ChangesetTest < Test::Unit::TestCase
   fixtures :projects, :repositories, :issues, :issue_statuses, :changesets, :changes, :issue_categories, :enumerations, :custom_fields, :custom_values, :users, :members, :trackers
+  fixtures :mailing_lists, :mailing_list_trackings
 
   def setup
   end

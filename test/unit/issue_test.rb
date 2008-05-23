@@ -18,17 +18,17 @@
 require File.dirname(__FILE__) + '/../test_helper'
 
 class IssueTest < Test::Unit::TestCase
-  fixtures :projects, :users, :members, :trackers, :projects_trackers, :issue_statuses, :issue_categories, :enumerations, :issues, :custom_fields, :custom_values, :time_entries
+  fixtures :projects, :users, :members, :trackers, :projects_trackers, :issue_statuses, :issue_categories, :enumerations, :issues, :custom_fields, :custom_values, :time_entries, :mailing_lists, :mailing_list_trackings
 
   def test_create
-    issue = Issue.new(:project_id => 1, :tracker_id => 1, :author_id => 3, :status_id => 1, :priority => Enumeration.get_values('IPRI').first, :subject => 'test_create', :description => 'IssueTest#test_create', :estimated_hours => '1:30')
-    assert issue.save
+    issue = Issue.new(:project_id => 1, :tracker_id => 1, :author_id => 3, :status_id => 1, :priority => Enumeration.get_values('IPRI').first, :subject => 'test_create', :description => 'IssueTest#test_create', :estimated_hours => '1:30', :mailing_list_id => 1)
+    issue.save
     issue.reload
     assert_equal 1.5, issue.estimated_hours
   end
   
   def test_category_based_assignment
-    issue = Issue.create(:project_id => 1, :tracker_id => 1, :author_id => 3, :status_id => 1, :priority => Enumeration.get_values('IPRI').first, :subject => 'Assignment test', :description => 'Assignment test', :category_id => 1)
+    issue = Issue.create(:project_id => 1, :tracker_id => 1, :author_id => 3, :status_id => 1, :priority => Enumeration.get_values('IPRI').first, :subject => 'Assignment test', :description => 'Assignment test', :category_id => 1, :mailing_list_id => 1)
     assert_equal IssueCategory.find(1).assigned_to, issue.assigned_to
   end
   
@@ -40,11 +40,12 @@ class IssueTest < Test::Unit::TestCase
     assert_equal orig.subject, issue.subject
     assert_equal orig.tracker, issue.tracker
     assert_equal orig.custom_values.first.value, issue.custom_values.first.value
+    assert_nil issue.mailing_list_code
   end
   
   def test_close_duplicates
     # Create 3 issues
-    issue1 = Issue.new(:project_id => 1, :tracker_id => 1, :author_id => 1, :status_id => 1, :priority => Enumeration.get_values('IPRI').first, :subject => 'Duplicates test', :description => 'Duplicates test')
+    issue1 = Issue.new(:project_id => 1, :tracker_id => 1, :author_id => 1, :status_id => 1, :priority => Enumeration.get_values('IPRI').first, :subject => 'Duplicates test', :description => 'Duplicates test', :mailing_list_id => 1)
     assert issue1.save
     issue2 = issue1.clone
     assert issue2.save
@@ -84,5 +85,13 @@ class IssueTest < Test::Unit::TestCase
     Issue.find(1).destroy
     assert_nil Issue.find_by_id(1)
     assert_nil TimeEntry.find_by_issue_id(1)
+  end
+  def test_recipients
+    issue = Issue.find(1)
+    assert issue.recipients.include?(mailing_lists(:ruby_dev).address)
+    assert !issue.recipients.include?(mailing_lists(:ruby_core).address)
+    issue.mailing_list = mailing_lists(:ruby_core)
+    assert !issue.recipients.include?(mailing_lists(:ruby_dev).address)
+    assert issue.recipients.include?(mailing_lists(:ruby_core).address)
   end
 end

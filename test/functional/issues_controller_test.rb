@@ -38,7 +38,9 @@ class IssuesControllerTest < Test::Unit::TestCase
            :custom_fields,
            :custom_values,
            :custom_fields_trackers,
-           :time_entries
+           :time_entries,
+           :mailing_lists,
+           :mailing_list_trackings
   
   def setup
     @controller = IssuesController.new
@@ -200,6 +202,7 @@ class IssuesControllerTest < Test::Unit::TestCase
                :issue => {:tracker_id => 1,
                           :subject => 'This is the test_new issue',
                           :description => 'This is the description',
+                          :mailing_list_id => 1,
                           :priority_id => 5,
                           :estimated_hours => ''},
                :custom_fields => {'2' => 'Value for field 2'}
@@ -212,6 +215,13 @@ class IssuesControllerTest < Test::Unit::TestCase
     v = issue.custom_values.find_by_custom_field_id(2)
     assert_not_nil v
     assert_equal 'Value for field 2', v.value
+
+    mail = ActionMailer::Base.deliveries.last
+    assert_kind_of TMail::Mail, mail
+    assert mail.bcc.include?(mailing_lists(:ruby_dev).address)
+    assert !mail.bcc.include?(mailing_lists(:ruby_core).address)
+    assert mail.subject.starts_with?("[#{issue.project.name} - #{issue.tracker.name} ##{issue.id}]")
+    assert mail.body.include?("Issue ##{issue.id} has been reported by #{User.find(2).name}")
   end
   
   def test_post_new_without_custom_fields_param
@@ -220,6 +230,7 @@ class IssuesControllerTest < Test::Unit::TestCase
                :issue => {:tracker_id => 1,
                           :subject => 'This is the test_new issue',
                           :description => 'This is the description',
+                          :mailing_list_id => 1,
                           :priority_id => 5}
     assert_redirected_to 'issues/show'
   end
@@ -279,6 +290,8 @@ class IssuesControllerTest < Test::Unit::TestCase
     
     mail = ActionMailer::Base.deliveries.last
     assert_kind_of TMail::Mail, mail
+    assert mail.bcc.include?(mailing_lists(:ruby_dev).address)
+    assert !mail.bcc.include?(mailing_lists(:ruby_core).address)
     assert mail.subject.starts_with?("[#{issue.project.name} - #{issue.tracker.name} ##{issue.id}]")
     assert mail.body.include?("Subject changed from #{old_subject} to #{new_subject}")
   end
@@ -303,6 +316,7 @@ class IssuesControllerTest < Test::Unit::TestCase
     
     mail = ActionMailer::Base.deliveries.last
     assert mail.body.include?("Status changed from New to Assigned")
+    assert mail.bcc.include?(issue.mailing_list.address)
   end
   
   def test_post_edit_with_note_only
@@ -319,6 +333,8 @@ class IssuesControllerTest < Test::Unit::TestCase
     
     mail = ActionMailer::Base.deliveries.last
     assert mail.body.include?(notes)
+    assert mail.bcc.include?(mailing_lists(:ruby_dev).address)
+    assert !mail.bcc.include?(mailing_lists(:ruby_core).address)
   end
   
   def test_post_edit_with_note_and_spent_time
@@ -359,6 +375,8 @@ class IssuesControllerTest < Test::Unit::TestCase
     
     mail = ActionMailer::Base.deliveries.last
     assert mail.body.include?('testfile.txt')
+    assert mail.bcc.include?(mailing_lists(:ruby_dev).address)
+    assert !mail.bcc.include?(mailing_lists(:ruby_core).address)
   end
   
   def test_post_edit_with_no_change

@@ -19,6 +19,8 @@ require File.dirname(__FILE__) + '/../test_helper'
 
 class MailHandlerTest < Test::Unit::TestCase
   fixtures :users, :projects, :enabled_modules, :roles, :members, :issues, :trackers, :enumerations
+  fixtures :projects_trackers, :issue_statuses
+  fixtures :mailing_lists, :mailing_list_trackings
   
   FIXTURES_PATH = File.dirname(__FILE__) + '/../fixtures'
   CHARSET = "utf-8"
@@ -44,6 +46,18 @@ class MailHandlerTest < Test::Unit::TestCase
     assert journal
     assert_equal User.find_by_mail("jsmith@somenet.foo"), journal.user
     assert_equal "Note added by mail", journal.notes
+  end
+
+  def test_add_issue_from_bug_report
+    raw = read_fixture("add_issue_from_bug_report.txt").join
+    MailHandler.receive(raw)
+
+    issue = Issue.find_by_subject("example ML bug report")
+    assert_not_nil issue
+    assert issue.description.include?("Reported by mail")
+    assert_equal '34789', issue.mailing_list_code
+    assert_equal mailing_lists(:ruby_dev), issue.mailing_list
+    assert_equal User.find_by_mail('jsmith@somenet.foo'), issue.author
   end
 
   private

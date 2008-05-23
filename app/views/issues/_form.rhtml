@@ -1,5 +1,6 @@
 <% if @issue.new_record? %>
 <p><%= f.select :tracker_id, @project.trackers.collect {|t| [t.name, t.id]}, :required => true %></p>
+<p><%= list_field(f) %></p>
 <%= observe_field :issue_tracker_id, :url => { :action => :new },
                                      :update => :content,
                                      :with => "Form.serialize('issue-form')" %>
@@ -23,7 +24,6 @@
 <% end %>
 
 <p><%= f.select :priority_id, (@priorities.collect {|p| [p.name, p.id]}), :required => true %></p>
-<p><%= f.select :assigned_to_id, (@issue.assignable_users.collect {|m| [m.name, m.id]}), :include_blank => true %></p>
 <p><%= f.select :category_id, (@project.issue_categories.collect {|c| [c.name, c.id]}), :include_blank => true %>
 <%= prompt_to_remote(l(:label_issue_category_new),
                      l(:label_issue_category_new), 'category[name]', 
@@ -37,8 +37,7 @@
 <div class="splitcontentright">
 <p><%= f.text_field :start_date, :size => 10 %><%= calendar_for('issue_start_date') %></p>
 <p><%= f.text_field :due_date, :size => 10 %><%= calendar_for('issue_due_date') %></p>
-<p><%= f.text_field :estimated_hours, :size => 3 %> <%= l(:field_hours) %></p>
-<p><%= f.select :done_ratio, ((0..10).to_a.collect {|r| ["#{r*10} %", r*10] }) %></p>
+<p><%= f.select :assigned_to_id, (@issue.assignable_users.collect {|m| [m.name, m.id]}), :include_blank => true %></p>
 </div>
 
 <div style="clear:both;"> </div>

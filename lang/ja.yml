@@ -114,6 +114,7 @@ field_notes: 注記
 field_is_closed: 終了したチケット
 field_is_default: デフォルトのステータス
 field_tracker: トラッカー
+field_mailing_list: 報告先(言語)
 field_subject: 題名
 field_due_date: 期限日
 field_assigned_to: 担当者
