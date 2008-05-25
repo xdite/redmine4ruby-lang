@@ -237,6 +237,9 @@ label_issue_view_all: View all issues
 label_issues_by: Issues by %s
 label_issue_added: Issue added
 label_issue_updated: Issue updated
+label_mailing_list: Mailing list
+label_mailing_list_plural: Mailing lists
+label_mailing_list_new: New mailing list
 label_document: Document
 label_document_new: New document
 label_document_plural: Documents

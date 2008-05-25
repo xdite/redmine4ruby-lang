@@ -1,0 +1,8 @@
+<%= error_messages_for 'mailing_list' %>
+
+<div class="box">
+  <h3><%=l(:label_information_plural)%></h3>
+  <p><%= f.text_field :name, :required => true, :size => 25, :label => l(:field_name) %></p>
+  <p><%= f.text_field :address, :required => true, :label => l(:field_mail) %></p>
+  <p><%= f.select :locale, lang_options_for_select(false), :required => true, :label => l(:field_language) %></p>
+</div>

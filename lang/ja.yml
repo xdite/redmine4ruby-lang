@@ -200,6 +200,9 @@ label_issue: チケット
 label_issue_new: 新しいチケット
 label_issue_plural: チケット
 label_issue_view_all: チケットを全て見る
+label_mailing_list: メーリングリスト
+label_mailing_list_plural: メーリングリスト
+label_mailing_list_new: 新しいメーリングリスト
 label_document: 文書
 label_document_new: 新しい文書
 label_document_plural: 文書

@@ -42,7 +42,8 @@ class TabularFormBuilder < ActionView::Helpers::FormBuilder
   end
   
   def select(field, choices, options = {}, html_options = {}) 
-    label_text = l(("field_"+field.to_s.gsub(/\_id$/, "")).to_sym) + (options.delete(:required) ? @template.content_tag("span", " *", :class => "required"): "")
+    label_text = options[:label] || l(("field_"+field.to_s.gsub(/\_id$/, "")).to_sym)
+    label_text +=  @template.content_tag("span", " *", :class => "required") if options.delete(:required)
     label = @template.content_tag("label", label_text, 
                   :class => (@object && @object.errors[field] ? "error" : nil), 
                   :for => (@object_name.to_s + "_" + field.to_s))
