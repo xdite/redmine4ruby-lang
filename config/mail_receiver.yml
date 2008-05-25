@@ -1,0 +1,8 @@
+app_name: mail_receiver
+dir_mode: script
+dir: ../../log
+multiple: false
+monitor: true
+mode: :exec
+host: localhost
+port: 12346

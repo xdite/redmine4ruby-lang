@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+require 'rubygems'
+require "daemons"
+require 'yaml'
+
+class Hash
+  def with_symbols!
+    self.keys.each{|key| self[key.to_s.to_sym] = self[key] }; self
+  end
+end
+
+options = YAML.load_file(File.dirname(__FILE__) + "/../../config/mail_receiver.yml").with_symbols!
+options[:dir_mode] = options[:dir_mode].to_sym
+host = options[:host] || 'localhost'
+port = options[:port] || '12345'
+options[:ARGV] = ARGV + %W[ -- #{host} #{port} ]
+
+Daemons.run File.dirname(__FILE__) + '/mail_receiver.rb', options

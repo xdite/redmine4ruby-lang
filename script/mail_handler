@@ -1,3 +1,16 @@
-#!/opt/csw/bin/ruby
+#!/usr/bin/env ruby
+require 'drb/drb'
+require 'yaml'
 
+path = File.join(File.dirname(__FILE__), '..', 'config', 'mail_receiver.yml')
+options = YAML.load_file(path)
 
+host = options['host'] || options[:host] || 'localhost'
+port = options['port'] || options[:port] || 12346
+
+begin
+  receiver = DRbObject.new_with_uri("druby://#{host}:#{port}")
+  receiver.receive($stdin.read)
+rescue
+  $stderr.puts $!.message, $!.backtrace
+end

@@ -30,6 +30,8 @@ class MailHandler < ActionMailer::Base
     else
       logger.warn("Unhandled mail received: #{email.to_s}")
     end
+  rescue
+    logger.error($!.message + ':' + $!.backtrace.join("\n"))
   end
 
   def add_note_from(email, issue_id)
