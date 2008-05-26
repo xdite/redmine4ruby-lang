@@ -1,5 +1,4 @@
 class MakeIssuesBelongToMailingList < ActiveRecord::Migration
-  Issue 
   def self.up
     add_column :issues, :mailing_list_id, :integer
     add_column :issues, :mailing_list_code, :string, :null => true
