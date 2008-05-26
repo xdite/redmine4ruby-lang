@@ -26,22 +26,3 @@ set :rake, "/opt/csw/bin/rake"
 role :app, "redmine.ruby-lang.org"
 role :web, "redmine.ruby-lang.org"
 role :db,  "redmine.ruby-lang.org", :primary => true
-
-
-task :init_database_config, :only => "app" do
-  $stderr.print('User name: '); username = $stdin.gets.chomp
-  password = Capistrano::CLI.password_prompt("database password:")
-
-  template = ERB.new(File.read("./config/database.yml.erb"))
-  config = template.result(binding)
-
-  run "mkdir -p #{deploy_to}/shared/config"
-  put config, "#{deploy_to}/shared/config/database.yml"
-end
-after 'deploy:setup', :init_database_config
-task :configure_database, :only => "app" do
-  run <<-EOS
-    cd #{release_path}/config && ln -sf #{deploy_to}/shared/config/database.yml .
-  EOS
-end
-after 'deploy:update_code', :configure_database

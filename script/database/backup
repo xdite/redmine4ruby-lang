@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+require 'yaml'
+
+env = ENV['RAILS_ENV'] || 'production'
+config = YAML.load_file(File.dirname(__FILE__) + '/../../config/database.yml')[env]
+db_params = "-u #{config['username']} --password=#{config['password']} --socket=#{config['socket']} #{config['database']}"
+schema_version = `mysql -e 'SELECT version FROM schema_info' -N #{db_params}`.to_i
+
+exec("mysqldump #{db_params} | bzip2 -c > backup/migration-#{schema_version}.#{Time.now.to_i}.bz2")
