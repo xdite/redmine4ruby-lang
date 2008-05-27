@@ -1,16 +1,33 @@
 #!/usr/bin/env ruby
 require 'drb/drb'
 require 'yaml'
+require 'fileutils'
 
-path = File.join(File.dirname(__FILE__), '..', 'config', 'mail_receiver.yml')
+path = File.expand_path(File.dirname(__FILE__) + '/../config/mail_receiver.yml')
 options = YAML.load_file(path)
 
 host = options['host'] || options[:host] || 'localhost'
 port = options['port'] || options[:port] || 12346
 
+mail = $stdin.read
+
+
+temp_dir = File.expand_path(File.dirname(__FILE__) + '/../tmp/mail')
+FileUtils.mkdir_p temp_dir
+begin
+  now = Time.now
+  temp_path = "%s/%d.%05d" % [temp_dir, now.tv_sec, now.tv_usec]
+  File.open(temp_path, File::WRONLY|File::CREAT|File::EXCL){|f| f.write(mail) }
+rescue
+  sleep rand
+  File.open(temp_path, File::WRONLY|File::CREAT|File::EXCL){|f| f.write(mail) } rescue nil
+end
+
 begin
   receiver = DRbObject.new_with_uri("druby://#{host}:#{port}")
-  receiver.receive($stdin.read)
+  receiver.receive(mail)
 rescue
   $stderr.puts $!.message, $!.backtrace
+else
+  File.unlink(temp_path)
 end
