@@ -50,7 +50,9 @@ class MailHandlerTest < Test::Unit::TestCase
 
   def test_add_issue_from_bug_report
     raw = read_fixture("add_issue_from_bug_report.txt").join
-    MailHandler.receive(raw)
+    assert_difference('Issue.count', 1) do
+      MailHandler.receive(raw)
+    end
 
     issue = Issue.find_by_subject("example ML bug report")
     assert_not_nil issue
@@ -58,6 +60,20 @@ class MailHandlerTest < Test::Unit::TestCase
     assert_equal '34789', issue.mailing_list_code
     assert_equal mailing_lists(:ruby_dev), issue.mailing_list
     assert_equal User.find_by_mail('jsmith@somenet.foo'), issue.author
+  end
+
+  def test_resolve_issue_by_cycled_mail
+    issue = Issue.find(2)
+    original_attr = issue.attributes.clone
+
+    raw = read_fixture('resolve_issue_by_cycled_mail.txt').join
+    assert_difference('Issue.count', 0) do
+      MailHandler.receive(raw)
+    end
+
+    issue.reload
+    assert_equal "34789", issue.mailing_list_code
+    assert_equal %w[ lock_version mailing_list_code updated_on ], (issue.attributes.diff(original_attr)).keys.sort
   end
 
   private

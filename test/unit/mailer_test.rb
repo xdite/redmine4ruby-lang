@@ -49,7 +49,21 @@ class MailerTest < Test::Unit::TestCase
     GLoc.valid_languages.each do |lang|
       Setting.default_language = lang.to_s
       assert Mailer.deliver_issue_add(issue)
+
+      mail = ActionMailer::Base.deliveries.last
+      assert_kind_of TMail::Mail, mail
+      assert_equal 'redmine@somenet.foo', mail.reply_to.first
+      assert_equal issue.author.mail, mail.from.first
     end
+  end
+  def test_issue_add_by_anonymous
+    issue = Issue.find(1)
+    issue.author = User.anonymous
+      assert Mailer.deliver_issue_add(issue)
+      mail = ActionMailer::Base.deliveries.last
+      assert_kind_of TMail::Mail, mail
+      assert_equal 'redmine@somenet.foo', mail.reply_to.first
+      assert_equal 'redmine@somenet.foo', mail.from.first
   end
 
   def test_issue_edit

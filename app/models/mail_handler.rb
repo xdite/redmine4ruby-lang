@@ -22,6 +22,8 @@ class MailHandler < ActionMailer::Base
     tracker_tags = Tracker.find(:all).map{|tracker|
       /\[(#{Regexp.escape tracker.name}):(.*?)\]/i
     }
+    return resolve_issue(email) if email.header['x-redmine-issue-id']
+
     case email.subject
     when %r{\[.*#(\d+)\]}   # find related issue by parsing the subject
       add_note_from(email, $1)
@@ -71,12 +73,28 @@ class MailHandler < ActionMailer::Base
     end
   end
 
+  def resolve_issue(email)
+    id = email.header['x-redmine-issue-id'].body
+    issue = Issue.find(id)
+    ml, ml_code = identify_mail_by_x_ml_header(email.header)
+
+    unless issue.project.identifier == email.header['x-redmine-project'].body and
+      email.subject.include?(issue.subject) and ml == issue.mailing_list and
+      email.from.first == issue.author.mail then
+      logger.error("cycled email's inconsistance: issue is;\n %s\nbut email is;\n%s" % [issue.to_yaml, email])
+      return
+    end
+
+    issue.mailing_list_code = ml_code
+    issue.save!
+  end
+
   private
   # Tries to identify the specified mail by its X-ML-Name and X-Mail-Count header fields.
   # This works for fml and QuickML
   def identify_mail_by_x_ml_header(headers)
-    ml = MailingList.find_by_name(headers['x-ml-name'].to_s)
-    return ml ? [ml, Integer(headers['x-mail-count'].to_s)] : nil
+    ml = MailingList.find_by_name(headers['x-ml-name'].body)
+    return ml ? [ml, Integer(headers['x-mail-count'].body)] : nil
   rescue ArgumentError
     return nil
   end

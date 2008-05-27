@@ -248,6 +248,8 @@ class User < ActiveRecord::Base
       false
     end
   end
+
+  def anonymous?; false end
   
   def self.current=(user)
     @current_user = user
@@ -288,4 +290,5 @@ class AnonymousUser < User
   def mail; nil end
   def time_zone; nil end
   def rss_key; nil end
+  def anonymous?; true end
 end
