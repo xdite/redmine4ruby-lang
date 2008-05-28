@@ -23,7 +23,7 @@ namespace :db do
   desc "Applies config/database.yml for production environment to the deployed code"
   task :apply_config, :only => "app" do
     run <<-"EOS"
-      cd #{latest_releasle}/config && ln -sf #{shared_path}/config/database.yml .
+      cd #{latest_release}/config && ln -sf #{shared_path}/config/database.yml .
     EOS
   end
   after 'deploy:update_code', 'db:apply_config'
