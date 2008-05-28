@@ -11,7 +11,7 @@ set :deploy_to, "/export/home/yugui/redmine"
 # your SCM below:
 # set :scm, :subversion
 set :scm, :git
-set :repository, "ssh://git.yugui.jp:422/var/git/redmine.git"
+set :repository, "git://github.com/yugui/redmine4ruby-lang.git"
 set :branch, "master"
 set :git_shallow_clone, 1
 set :deploy_via, :copy
