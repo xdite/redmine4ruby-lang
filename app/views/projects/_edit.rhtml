@@ -1,4 +1,9 @@
 <% labelled_tabular_form_for :project, @project, :url => { :action => "edit", :id => @project } do |f| %>
+  <ul class="box mailng-list">
+    <%- @project.mailing_lists.each do |list| -%>
+      <li><%=h list.name%>: <%=h list.address%></li>
+    <%- end -%>
+  </ul>
 <%= render :partial => 'form', :locals => { :f => f } %>
 <%= submit_tag l(:button_save) %>
 <% end %>

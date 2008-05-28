@@ -24,6 +24,7 @@ class Issue < ActiveRecord::Base
   belongs_to :fixed_version, :class_name => 'Version', :foreign_key => 'fixed_version_id'
   belongs_to :priority, :class_name => 'Enumeration', :foreign_key => 'priority_id'
   belongs_to :category, :class_name => 'IssueCategory', :foreign_key => 'category_id'
+  belongs_to :mailing_list
 
   has_many :journals, :as => :journalized, :dependent => :destroy
   has_many :attachments, :as => :container, :dependent => :destroy
@@ -41,6 +42,13 @@ class Issue < ActiveRecord::Base
                 :url => Proc.new {|o| {:controller => 'issues', :action => 'show', :id => o.id}}                
   
   validates_presence_of :subject, :description, :priority, :project, :tracker, :author, :status
+  before_validation do |issue|
+    issue.subject = issue.subject && issue.subject.strip
+    issue.description = issue.description && issue.description.strip
+  end
+  validates_presence_of :mailing_list
+  validates_uniqueness_of :mailing_list_code, :scope => [:project_id, :mailing_list_id], 
+    :unless => proc{|issue| issue.mailing_list_code.nil?}
   validates_length_of :subject, :maximum => 255
   validates_inclusion_of :done_ratio, :in => 0..100
   validates_numericality_of :estimated_hours, :allow_nil => true
@@ -58,6 +66,7 @@ class Issue < ActiveRecord::Base
     issue = arg.is_a?(Issue) ? arg : Issue.find(arg)
     self.attributes = issue.attributes.dup
     self.custom_values = issue.custom_values.collect {|v| v.clone}
+    self.mailing_list_code = nil
     self
   end
   
@@ -205,6 +214,7 @@ class Issue < ActiveRecord::Base
     # Author and assignee are always notified unless they have been locked
     recipients << author.mail if author && author.active?
     recipients << assigned_to.mail if assigned_to && assigned_to.active?
+    recipients << mailing_list.address
     recipients.compact.uniq
   end
   

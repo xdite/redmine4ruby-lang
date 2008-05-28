@@ -27,6 +27,8 @@ class Mailer < ActionMailer::Base
                     'Issue-Id' => issue.id,
                     'Issue-Author' => issue.author.login
     redmine_headers 'Issue-Assignee' => issue.assigned_to.login if issue.assigned_to
+    from issue.author.mail unless issue.author.anonymous?
+    headers['Reply-To'] = Setting.mail_from
     recipients issue.recipients    
     subject "[#{issue.project.name} - #{issue.tracker.name} ##{issue.id}] (#{issue.status.name}) #{issue.subject}"
     body :issue => issue,

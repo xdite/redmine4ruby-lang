@@ -1,0 +1,20 @@
+Delivered-To: ruby-dev@local.yugui.jp
+Date: Wed, 21 May 2008 17:59:32 +0900
+Posted: Wed, 21 May 2008 17:59:34 +0900 (JST)
+From: Redmine Example <jsmith@somenet.foo>
+Reply-To: ruby-dev@local.yugui.jpuby-lang.org
+Subject: [ruby-dev:34789] [BUG:trunk] example ML bug report
+To: ruby-dev@local.yugui.jp (ruby developers list)
+Message-Id: <20080521.175934.71091024redmine.example.com>
+X-ML-Name: ruby-dev
+X-Mail-Count: 34789
+X-Original-To: ruby-dev@local.yugui.jp
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-2022-jp
+Content-Transfer-Encoding: 7bit
+Precedence: bulk
+Lines: 1
+List-Id: ruby-dev.local.yugui.jp
+List-Post: <mailto:ruby-dev@local.yugui.jp>
+
+Reported by mail

@@ -18,13 +18,26 @@
 class MailHandler < ActionMailer::Base
   
   # Processes incoming emails
-  # Currently, it only supports adding a note to an existing issue
-  # by replying to the initial notification message
   def receive(email)
-    # find related issue by parsing the subject
-    m = email.subject.match %r{\[.*#(\d+)\]}
-    return unless m
-    issue = Issue.find_by_id(m[1])
+    tracker_tags = Tracker.find(:all).map{|tracker|
+      /\[(#{Regexp.escape tracker.name}):(.*?)\]/i
+    }
+    return resolve_issue(email) if email.header['x-redmine-issue-id']
+
+    case email.subject
+    when %r{\[.*#(\d+)\]}   # find related issue by parsing the subject
+      add_note_from(email, $1)
+    when *tracker_tags
+      add_issue_from(email, $1, $2)
+    else
+      logger.warn("Unhandled mail received: #{email.to_s}")
+    end
+  rescue
+    logger.error($!.message + ':' + $!.backtrace.join("\n"))
+  end
+
+  def add_note_from(email, issue_id)
+    issue = Issue.find_by_id(issue_id)
     return unless issue
     
     # find user
@@ -36,5 +49,53 @@ class MailHandler < ActionMailer::Base
     # add the note
     issue.init_journal(user, email.body.chomp)
     issue.save
+  end
+
+  def add_issue_from(email, tracker_name, target_name)
+    # find user
+    user = User.find_active(:first, :conditions => {:mail => email.from.first})
+    return unless user
+
+    ml,ml_code = identify_mail_by_x_ml_header(email.header)
+    return unless ml
+    projects = ml.mailing_list_trackings.select{|track| track.match?(target_name) }.map(&:project)
+    projects.each do |project|
+      # check permission
+      return unless user.allowed_to?(:add_issues, project)
+
+      tracker = project.trackers.find(:first, :conditions => ['LOWER(name) = LOWER(?)', tracker_name])
+      next unless tracker
+
+      subject = email.subject.sub(/\A.*?\[#{Regexp.escape tracker_name}:.+?\]\s*/, '')
+      project.issues.create! :subject => subject, :description => email.body, :tracker => tracker,
+        :status => IssueStatus.default, :priority => Enumeration::get_values('IPRI').first,
+        :author => user, :mailing_list => ml, :mailing_list_code => ml_code
+    end
+  end
+
+  def resolve_issue(email)
+    id = email.header['x-redmine-issue-id'].body
+    issue = Issue.find(id)
+    ml, ml_code = identify_mail_by_x_ml_header(email.header)
+
+    unless issue.project.identifier == email.header['x-redmine-project'].body and
+      email.subject.include?(issue.subject) and ml == issue.mailing_list and
+      email.from.first == issue.author.mail then
+      logger.error("cycled email's inconsistance: issue is;\n %s\nbut email is;\n%s" % [issue.to_yaml, email])
+      return
+    end
+
+    issue.mailing_list_code = ml_code
+    issue.save!
+  end
+
+  private
+  # Tries to identify the specified mail by its X-ML-Name and X-Mail-Count header fields.
+  # This works for fml and QuickML
+  def identify_mail_by_x_ml_header(headers)
+    ml = MailingList.find_by_name(headers['x-ml-name'].body)
+    return ml ? [ml, Integer(headers['x-mail-count'].body)] : nil
+  rescue ArgumentError
+    return nil
   end
 end

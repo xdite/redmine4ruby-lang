@@ -10,7 +10,9 @@ class IssuesTest < ActionController::IntegrationTest
            :enumerations,
            :custom_fields,
            :custom_values,
-           :custom_fields_trackers
+           :custom_fields_trackers,
+           :mailing_lists,
+           :mailing_list_trackings
 
   # create an issue
   def test_add_issue
@@ -25,6 +27,7 @@ class IssuesTest < ActionController::IntegrationTest
                                              :subject => "new test issue", 
                                              :category_id => "", 
                                              :description => "new issue", 
+                                             :mailing_list_id => 1,
                                              :done_ratio => "0",
                                              :due_date => "",
                                              :assigned_to_id => "" },
@@ -42,6 +45,8 @@ class IssuesTest < ActionController::IntegrationTest
     assert_equal 'jsmith', issue.author.login
     assert_equal 1, issue.project.id
     assert_equal 1, issue.status.id
+    assert_equal mailing_lists(:ruby_dev), issue.mailing_list
+    assert_nil issue.mailing_list_code
   end
 
   # add then remove 2 attachments to an issue

@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 92) do
+ActiveRecord::Schema.define(:version => 95) do
 
   create_table "attachments", :force => true do |t|
     t.integer  "container_id",                 :default => 0,  :null => false
@@ -175,26 +175,29 @@ ActiveRecord::Schema.define(:version => 92) do
   end
 
   create_table "issues", :force => true do |t|
-    t.integer  "tracker_id",       :default => 0,  :null => false
-    t.integer  "project_id",       :default => 0,  :null => false
-    t.string   "subject",          :default => "", :null => false
+    t.integer  "tracker_id",        :default => 0,  :null => false
+    t.integer  "project_id",        :default => 0,  :null => false
+    t.string   "subject",           :default => "", :null => false
     t.text     "description"
     t.date     "due_date"
     t.integer  "category_id"
-    t.integer  "status_id",        :default => 0,  :null => false
+    t.integer  "status_id",         :default => 0,  :null => false
     t.integer  "assigned_to_id"
-    t.integer  "priority_id",      :default => 0,  :null => false
+    t.integer  "priority_id",       :default => 0,  :null => false
     t.integer  "fixed_version_id"
-    t.integer  "author_id",        :default => 0,  :null => false
-    t.integer  "lock_version",     :default => 0,  :null => false
+    t.integer  "author_id",         :default => 0,  :null => false
+    t.integer  "lock_version",      :default => 0,  :null => false
     t.datetime "created_on"
     t.datetime "updated_on"
     t.date     "start_date"
-    t.integer  "done_ratio",       :default => 0,  :null => false
+    t.integer  "done_ratio",        :default => 0,  :null => false
     t.float    "estimated_hours"
+    t.integer  "mailing_list_id"
+    t.string   "mailing_list_code"
   end
 
   add_index "issues", ["project_id"], :name => "issues_project_id"
+  add_index "issues", ["mailing_list_id", "mailing_list_code"], :name => "mail_identifier"
 
   create_table "journal_details", :force => true do |t|
     t.integer "journal_id",               :default => 0,  :null => false
@@ -215,6 +218,22 @@ ActiveRecord::Schema.define(:version => 92) do
   end
 
   add_index "journals", ["journalized_id", "journalized_type"], :name => "journals_journalized_id"
+
+  create_table "mailing_list_trackings", :force => true do |t|
+    t.integer  "project_id",               :null => false
+    t.integer  "mailing_list_id",          :null => false
+    t.string   "project_selector_pattern", :null => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "mailing_lists", :force => true do |t|
+    t.string   "name",       :null => false
+    t.string   "address",    :null => false
+    t.string   "locale",     :null => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "members", :force => true do |t|
     t.integer  "user_id",           :default => 0,     :null => false
