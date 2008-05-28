@@ -52,8 +52,7 @@ class MailerTest < Test::Unit::TestCase
 
       mail = ActionMailer::Base.deliveries.last
       assert_kind_of TMail::Mail, mail
-      assert_equal 'redmine@somenet.foo', mail.reply_to.first
-      assert_equal issue.author.mail, mail.from.first
+      assert_equal 'redmine@somenet.foo', mail.from.first
     end
   end
   def test_issue_add_by_anonymous
@@ -62,7 +61,6 @@ class MailerTest < Test::Unit::TestCase
       assert Mailer.deliver_issue_add(issue)
       mail = ActionMailer::Base.deliveries.last
       assert_kind_of TMail::Mail, mail
-      assert_equal 'redmine@somenet.foo', mail.reply_to.first
       assert_equal 'redmine@somenet.foo', mail.from.first
   end
 
