@@ -5,7 +5,7 @@ require File.dirname(__FILE__) + "/../../config/environment"
 
 $running = true;
 Signal.trap("TERM") { $running = false }
-logger = ActionMailer::Base.logger
+logger = ActionMailer::Base.logger || ActiveRecord::Base.logger
 
 host = ARGV.shift
 port = ARGV.shift.to_i
