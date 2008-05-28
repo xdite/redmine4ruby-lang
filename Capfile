@@ -46,6 +46,21 @@ namespace :db do
   end
 end
 
+namespace :mail do
+  desc 'starts mail receiving daemon'
+  task :start do
+    run "env PATH='#{PATH} #{release_path}/script/daemon start"
+  end
+  desc 'restarts mail receiving daemon'
+  task :restart do
+    run "env PATH='#{PATH} #{release_path}/script/daemon restart"
+  end
+  desc 'stops mail receiving daemon'
+  task :stop do
+    run "env PATH='#{PATH} #{release_path}/script/daemon stop"
+  end
+end
+
 desc '[internal]'
 task :setup_dirs do
   run <<-"CMD"
