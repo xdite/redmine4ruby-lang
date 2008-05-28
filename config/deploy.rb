@@ -1,5 +1,3 @@
-autoload :ERB, 'erb'
-
 set :use_sudo, false
 set :application, "redmine"
 

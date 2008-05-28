@@ -2,6 +2,7 @@ load 'deploy' if respond_to?(:namespace) # cap2 differentiator
 Dir['vendor/plugins/*/recipes/*.rb'].each { |plugin| load(plugin) }
 require 'mongrel_cluster/recipes'
 load 'config/deploy'
+autoload :ERB, 'erb'
 
 PATH="/opt/csw/bin:/opt/csw/mysql5/bin:/usr/local/bin:/usr/bin:/bin"
 
@@ -44,3 +45,15 @@ namespace :db do
     run "ls #{deploy_to}/shared/backup/"
   end
 end
+
+desc '[internal]'
+task :setup_dirs do
+  run <<-"CMD"
+    cd #{release_path}
+    mkdir #{deploy_to}/shared/cache || true
+    mkdir #{deploy_to}/shared/sessions || true
+    ln -s #{deploy_to}/shared/cache #{release_path}/tmp/cache
+    ln -s #{deploy_to}/shared/sessions #{release_path}/tmp/sessions
+  CMD
+end
+after 'deploy:update_code', :setup_dirs
