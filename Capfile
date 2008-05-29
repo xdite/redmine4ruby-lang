@@ -83,3 +83,11 @@ task :setup_dirs do
   CMD
 end
 after 'deploy:update_code', :setup_dirs
+
+desc "fixes ths shebang's of script/**/*"
+task :fix_shebang do
+  run <<-"CMD".gsub(/^ +/, '')
+    for entry in `find #{latest_release}/script -type f`; do #{latest_release}/script/fix_path $entry; done
+  CMD
+end
+after 'deploy:update_code', :fix_shebang

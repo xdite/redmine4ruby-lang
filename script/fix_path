@@ -1,0 +1,16 @@
+#!/bin/sh
+if [ -z "$1" ]; then
+  echo "Usage: $0 /path/to/file/to/fix" >&2
+  exit 1
+fi
+if [ "`head -1 $1`" != "#!/usr/bin/env ruby" ]; then
+  echo "nothing to do"
+  exit 0
+fi
+cat <<EOS | ed $1 2>/dev/null >/dev/null
+1c
+/opt/csw/bin/ruby
+ENV['PATH'] = '/opt/csw/bin:/usr/bin:/bin'
+.
+wq
+EOS
