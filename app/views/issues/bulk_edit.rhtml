@@ -42,7 +42,6 @@
 
 <fieldset><legend><%= l(:field_notes) %></legend>
 <%= text_area_tag 'notes', @notes, :cols => 60, :rows => 10, :class => 'wiki-edit' %>
-<%= wikitoolbar_for 'notes' %>
 </div>
 
 <p><%= submit_tag l(:button_submit) %>
