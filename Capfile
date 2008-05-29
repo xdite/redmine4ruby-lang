@@ -90,3 +90,4 @@ task :fix_shebang do
     find #{latest_release}/script -type f -exec #{latest_release}/script/fix_path '{}' ';'
   CMD
 end
+after 'deploy:update_code', :fix_shebang
