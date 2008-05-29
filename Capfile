@@ -54,21 +54,27 @@ namespace :mail do
   task :start do
     run <<-"CMD"
       cd #{latest_release} &&
-      /usr/bin/env PATH='#{PATH}' RAILS_ENV=production #{latest_release}/script/daemons start
+      /usr/bin/env RAILS_ENV=production #{latest_release}/script/daemons start
     CMD
   end
   desc 'restarts mail receiving daemon'
   task :restart do
     run <<-"CMD"
       cd #{latest_release} &&
-      /usr/bin/env PATH='#{PATH}' RAILS_ENV=production #{latest_release}/script/daemons restart
+      /usr/bin/env RAILS_ENV=production #{latest_release}/script/daemons restart
     CMD
   end
   desc 'stops mail receiving daemon'
   task :stop do
     run <<-"CMD"
       cd #{latest_release} &&
-      /usr/bin/env PATH='#{PATH}' RAILS_ENV=production #{latest_release}/script/daemons stop
+      /usr/bin/env RAILS_ENV=production #{latest_release}/script/daemons stop
+    CMD
+  end
+  task :check do
+    run <<-"CMD"
+      cd #{latest_release} &&
+      /usr/bin/env RAILS_ENV=production #{latest_release}/script/mail_checker
     CMD
   end
 end
