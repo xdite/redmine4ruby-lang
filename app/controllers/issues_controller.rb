@@ -194,7 +194,7 @@ class IssuesController < ApplicationController
           @time_entry.attributes = params[:time_entry]
           @time_entry.save
         end
-        if !journal.new_record? and !journal.note.blank?
+        unless journal.new_record? or journal.notes.blank?
           # Only send notification if something was actually changed
           flash[:notice] = l(:notice_successful_update)
           Mailer.deliver_issue_edit(journal) if Setting.notified_events.include?('issue_updated')
