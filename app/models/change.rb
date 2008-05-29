@@ -22,13 +22,6 @@ class Change < ActiveRecord::Base
 
   # relative path from changeset.repository.url
   def relative_path
-    @relataive_path ||=
-      unless path.starts_with?('/')
-        path
-      else
-        repos = changeset.repository
-        abs_url = URI.parse("#{repos.root_url}#{path}")
-        abs_url.route_from(repos.url)
-      end
+    @relative_path ||= changeset.repository.relative_path(path)
   end
 end
