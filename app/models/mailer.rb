@@ -27,7 +27,8 @@ class Mailer < ActionMailer::Base
                     'Issue-Id' => issue.id,
                     'Issue-Author' => issue.author.login
     redmine_headers 'Issue-Assignee' => issue.assigned_to.login if issue.assigned_to
-    recipients issue.recipients    
+    recipients issue.mailing_list.address
+    bcc issue.recipients
     subject "[#{issue.project.name} - #{issue.tracker.name} ##{issue.id}] (#{issue.status.name}) #{issue.subject}"
     body :issue => issue,
          :issue_url => url_for(:controller => 'issues', :action => 'show', :id => issue)
@@ -39,9 +40,9 @@ class Mailer < ActionMailer::Base
                     'Issue-Id' => issue.id,
                     'Issue-Author' => issue.author.login
     redmine_headers 'Issue-Assignee' => issue.assigned_to.login if issue.assigned_to
-    recipients issue.recipients
-    # Watchers in cc
-    cc(issue.watcher_recipients - @recipients)
+    recipients issue.mailing_list.address
+    # recipients and watchers in bcc
+    bcc(issue.watcher_recipients & issue.recipients)
     s = "[#{issue.project.name} - #{issue.tracker.name} ##{issue.id}] "
     s << "(#{issue.status.name}) " if journal.new_value_for('status_id')
     s << issue.subject

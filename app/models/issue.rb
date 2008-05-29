@@ -214,7 +214,6 @@ class Issue < ActiveRecord::Base
     # Author and assignee are always notified unless they have been locked
     recipients << author.mail if author && author.active?
     recipients << assigned_to.mail if assigned_to && assigned_to.active?
-    recipients << mailing_list.address
     recipients.compact.uniq
   end
   
