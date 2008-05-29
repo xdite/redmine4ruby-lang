@@ -46,6 +46,18 @@ class MailHandlerTest < Test::Unit::TestCase
     assert journal
     assert_equal User.find_by_mail("jsmith@somenet.foo"), journal.user
     assert_equal "Note added by mail", journal.notes
+    assert_nil issue.mail_id
+  end
+
+  def test_add_note_by_reply
+    raw = read_fixture('add_note_by_reply.txt').join
+    MailHandler.receive(raw)
+
+    issue = Issue.find(1)
+    journal = issue.journals.find(:first, :order => "created_on DESC")
+    assert journal
+    assert_equal User.find_by_mail('jsmith@somenet.foo'), journal.user
+    assert_equal "Note added by mail reply", journal.notes
   end
 
   def test_add_issue_from_bug_report
@@ -73,7 +85,7 @@ class MailHandlerTest < Test::Unit::TestCase
 
     issue.reload
     assert_equal "34789", issue.mailing_list_code
-    assert_equal %w[ lock_version mailing_list_code updated_on ], (issue.attributes.diff(original_attr)).keys.sort
+    assert_equal %w[ lock_version mail_id mailing_list_code updated_on ], (issue.attributes.diff(original_attr)).keys.sort
   end
 
   private

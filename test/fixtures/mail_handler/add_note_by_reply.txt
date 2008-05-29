@@ -1,0 +1,22 @@
+Delivered-To: ruby-dev@local.yugui.jp
+Date: Wed, 21 May 2008 17:59:32 +0900
+Posted: Wed, 21 May 2008 17:59:34 +0900 (JST)
+From: Redmine Example <jsmith@somenet.foo>
+Reply-To: ruby-dev@local.yugui.jpuby-lang.org
+Subject: [ruby-dev:10001] Re: hoge
+To: ruby-dev@local.yugui.jp (ruby developers list)
+Message-Id: <20080521.175934.71091024redmine.example.com>
+X-ML-Name: ruby-dev
+X-Mail-Count: 10001
+References: <123456789ABCDEF@redmine.example.com>, <23456789ABCDEF0@redmine.example.com>
+In-Reply-To: <23456789ABCDEF0@redmine.example.com>
+X-Original-To: ruby-dev@local.yugui.jp
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-2022-jp
+Content-Transfer-Encoding: 7bit
+Precedence: bulk
+Lines: 1
+List-Id: ruby-dev.local.yugui.jp
+List-Post: <mailto:ruby-dev@local.yugui.jp>
+
+Note added by mail reply

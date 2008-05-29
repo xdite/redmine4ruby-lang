@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 95) do
+ActiveRecord::Schema.define(:version => 96) do
 
   create_table "attachments", :force => true do |t|
     t.integer  "container_id",                 :default => 0,  :null => false
@@ -194,10 +194,12 @@ ActiveRecord::Schema.define(:version => 95) do
     t.float    "estimated_hours"
     t.integer  "mailing_list_id"
     t.string   "mailing_list_code"
+    t.string   "mail_id"
   end
 
   add_index "issues", ["project_id"], :name => "issues_project_id"
   add_index "issues", ["mailing_list_id", "mailing_list_code"], :name => "mail_identifier"
+  add_index "issues", ["mail_id"], :name => "index_issues_on_mail_id"
 
   create_table "journal_details", :force => true do |t|
     t.integer "journal_id",               :default => 0,  :null => false
