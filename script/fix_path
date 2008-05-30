@@ -9,7 +9,7 @@ fi
 cat <<EOS | ed -s $1  2>&1 >/dev/null
 1c
 #!/opt/csw/bin/ruby
-ENV['PATH'] = '/opt/csw/bin:/usr/bin:/bin' unless ENV['PATH'].include?('/opt/csw/bin')
+ENV['PATH'] = '/opt/csw/bin:/usr/bin:/bin' unless ENV['PATH'] and ENV['PATH'].include?('/opt/csw/bin')
 .
 
 w
