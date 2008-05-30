@@ -86,7 +86,7 @@ task :setup_dirs do
     mkdir #{shared_path}/sessions 2>/dev/null || true; \
     mkdir #{shared_path}/mail 2>/dev/null || true; \
     ln -s #{shared_path}/cache #{latest_release}/tmp/; \
-    ln -s #{shared_path}/sessions #{latest_release}/tmp/ \
+    ln -s #{shared_path}/sessions #{latest_release}/tmp/; \
     ln -s #{shared_path}/mail #{latest_release}/tmp/
   CMD
 end
