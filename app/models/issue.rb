@@ -255,7 +255,9 @@ class Issue < ActiveRecord::Base
 
   def archive_url
     code = self.mailing_list_code 
-    code and mailing_list.archive_url % [code]
+    if code and mailing_list.archive_url
+      return mailing_list.archive_url % [code]
+    end
   end
   
   def to_s
