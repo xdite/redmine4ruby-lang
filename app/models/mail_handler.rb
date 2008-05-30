@@ -46,7 +46,7 @@ class MailHandler < ActionMailer::Base
     
     # find user
     user = User.find_active(:first, :conditions => {:mail => email.from.first})
-    return unless user
+    user ||= User.anonymous
     # check permission
     return unless user.allowed_to?(:add_issue_notes, issue.project)
     
@@ -61,7 +61,7 @@ class MailHandler < ActionMailer::Base
 
     # find user
     user = User.find_active(:first, :conditions => {:mail => email.from.first})
-    return unless user
+    user ||= User.anonymous
     # check permission
     return unless user.allowed_to?(:add_issue_notes, issue.project)
 
@@ -90,7 +90,7 @@ class MailHandler < ActionMailer::Base
   def add_issue_from(email, tracker_name, target_name)
     # find user
     user = User.find_active(:first, :conditions => {:mail => email.from.first})
-    return unless user
+    user ||= User.anonymous
 
     ml, ml_code, msg_id = identify_mail_by_x_ml_header(email.header)
     return unless ml
