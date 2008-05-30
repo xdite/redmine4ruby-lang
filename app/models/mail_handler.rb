@@ -16,6 +16,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 class MailHandler < ActionMailer::Base
+  def self.logger
+    @logger ||= Logger.new(File.expand_path(RAILS_ROOT+'/log/mail_handler.log'), 'daily')
+  end
+  def logger
+    self.class.logger
+  end
   
   # Processes incoming emails
   def receive(email)
@@ -114,10 +120,16 @@ class MailHandler < ActionMailer::Base
     issue = Issue.find(id)
     ml, ml_code, msg_id = identify_mail_by_x_ml_header(email.header)
 
-    unless issue.project.identifier == email.header['x-redmine-project'].body and
-      email.subject.include?(issue.subject) and ml == issue.mailing_list and
-      email.from.first == issue.author.mail then
-      logger.error("cycled email's inconsistance: issue is;\n %s\nbut email is;\n%s" % [issue.to_yaml, email])
+    unless issue.project.identifier == email.header['x-redmine-project'].body
+      logger.error("cycled email's inconsistance: x-redmine-project\nissue is;\n %s\nbut email is;\n%s" % [issue.to_yaml, email])
+      return
+    end
+    unless email.subject.include?(issue.subject)
+      logger.error("cycled email's inconsistance: subject\nissue is;\n %s\nbut email is;\n%s" % [issue.to_yaml, email])
+      return
+    end
+    unless ml == issue.mailing_list
+      logger.error("cycled email's inconsistance: ml\nissue is;\n %s\nbut email is;\n%s" % [issue.to_yaml, email])
       return
     end
 
