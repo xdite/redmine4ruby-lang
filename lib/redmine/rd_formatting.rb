@@ -30,6 +30,8 @@ module Redmine
       tree.parse
       visitor.charcode = "utf8"
       visitor.visit(tree)
+    rescue Racc::ParseError => e
+      return "<pre>#{e.message}</pre>"
     end
   end
 end
