@@ -217,9 +217,15 @@ module ApplicationHelper
       end
     end
     
-    text = (Setting.text_formatting == 'textile') ?
-      Redmine::WikiFormatting.to_html(text) { |macro, args| exec_macro(macro, obj, args) } :
-      simple_format(auto_link(h(text)))
+    text = 
+      case Setting.text_formatting
+      when 'textile'
+        Redmine::WikiFormatting.to_html(text) { |macro, args| exec_macro(macro, obj, args) }
+      when 'rd'
+        Redmine::RDFormatting.to_html(text) { |macro, args| exec_macro(macro, obj, args) }
+      else
+        simple_format(auto_link(h(text)))
+      end
 
     # different methods for formatting wiki links
     case options[:wiki_links]

@@ -1,0 +1,35 @@
+require 'rd/rdfmt'
+require 'rd/visitor'
+require 'rd/version'
+require 'rd/rd2html-lib'
+
+module Redmine
+  module RDFormatting
+    FILTERS = [
+    ].freeze
+
+    class RestrictedHTMLVisitor < RD::RD2HTMLVisitor
+      def apply_to_DocumentElement(element, content)
+        content.join
+      end
+    end
+    def self.to_html(text, options = {}, &block)
+      visitor = RestrictedHTMLVisitor.new
+      src = text.split(/^/)
+      if src.find{|i| /\S/ === i } and !src.find{|i| /^=begin\b/ === i }
+        src.unshift("=begin\n").push("=end\n")
+      end
+
+      include_path = [RD::RDTree.tmp_dir]
+      tree = RD::RDTree.new(src, include_path, nil)
+      FILTERS.each do |part_name, filter|
+        tree.filter[part_name] = filter
+      end
+  
+      # parse
+      tree.parse
+      visitor.charcode = "utf8"
+      visitor.visit(tree)
+    end
+  end
+end
