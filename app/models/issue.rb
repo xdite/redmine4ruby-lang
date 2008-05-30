@@ -252,6 +252,11 @@ class Issue < ActiveRecord::Base
       yield
     end
   end
+
+  def archive_url
+    code = self.mailing_list_code 
+    code and mailing_list.archive_url % [code]
+  end
   
   def to_s
     "#{tracker} ##{id}: #{subject}"

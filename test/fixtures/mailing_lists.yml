@@ -5,15 +5,18 @@ ruby_dev:
   name: ruby-dev
   address: ruby-dev@ruby-lang.org
   locale: ja
+  archive_url: "http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-dev/%1$s"
 
 ruby_core:
   id: 2
   name: ruby-core
   address: ruby-core@ruby-lang.org
   locale: en
+  archive_url: "http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-core/%1$s"
 
 redmine:
   id: 3
   name: "redmine4ruby-lang"
   address: "redmine4ruby-lang@qwik.jp"
   locale: ja
+  archive_url: "http://yugui.jp/w3ml/w3ml/redmine4ruby-lang/%1$s"

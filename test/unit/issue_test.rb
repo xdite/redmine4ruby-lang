@@ -86,12 +86,9 @@ class IssueTest < Test::Unit::TestCase
     assert_nil Issue.find_by_id(1)
     assert_nil TimeEntry.find_by_issue_id(1)
   end
-  def test_recipients
+
+  def test_archive_url
     issue = Issue.find(1)
-    assert issue.recipients.include?(mailing_lists(:ruby_dev).address)
-    assert !issue.recipients.include?(mailing_lists(:ruby_core).address)
-    issue.mailing_list = mailing_lists(:ruby_core)
-    assert !issue.recipients.include?(mailing_lists(:ruby_dev).address)
-    assert issue.recipients.include?(mailing_lists(:ruby_core).address)
+    assert_equal "http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-dev/1", issue.archive_url
   end
 end

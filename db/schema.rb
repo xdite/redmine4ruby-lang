@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 96) do
+ActiveRecord::Schema.define(:version => 97) do
 
   create_table "attachments", :force => true do |t|
     t.integer  "container_id",                 :default => 0,  :null => false
@@ -230,11 +230,12 @@ ActiveRecord::Schema.define(:version => 96) do
   end
 
   create_table "mailing_lists", :force => true do |t|
-    t.string   "name",       :null => false
-    t.string   "address",    :null => false
-    t.string   "locale",     :null => false
+    t.string   "name",        :null => false
+    t.string   "address",     :null => false
+    t.string   "locale",      :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "archive_url"
   end
 
   create_table "members", :force => true do |t|

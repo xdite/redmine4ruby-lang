@@ -7,7 +7,10 @@
 <%= link_to_if_authorized l(:button_delete), {:controller => 'issues', :action => 'destroy', :id => @issue}, :confirm => l(:text_are_you_sure), :method => :post, :class => 'icon icon-del' %>
 </div>
 
-<h2><%= @issue.tracker.name %> #<%= @issue.id %></h2>
+<h2>
+  <%= @issue.tracker.name %> #<%= @issue.id %>
+  <%= @issue.archive_url ? link_to("[#{@issue.mailing_list.name}:#{@issue.mailing_list_code}]", @issue.archive_url) : '' %>
+</h2>
 
 <div class="issue <%= "status-#{@issue.status.position} priority-#{@issue.priority.position}" %>">
         <h3><%=h @issue.subject %></h3>

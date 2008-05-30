@@ -166,6 +166,7 @@ field_assignable: チケットはこのロールに割り当てることがで�
 field_redirect_existing_links: 既存のリンクをリダイレクトする
 field_estimated_hours: 予定工数
 field_default_value: デフォルトのステータス
+field_archive_url: アーカイブのURL
 
 setting_app_title: アプリケーションのタイトル
 setting_app_subtitle: アプリケーションのサブタイトル
