@@ -9,9 +9,6 @@ module Redmine
         = test
         (({def t; end}))
          test
-        * a
-        * b
-        * c
         =end
       SOURCE
       doc = Hpricot.parse(StringIO.new(html))
@@ -19,13 +16,6 @@ module Redmine
       assert_equal 'test', (doc/:h1).text
       assert_equal 'def t; end', (doc/:p/:code).text
       assert_equal 'test', (doc/:pre).text
-      assert_equal %w[ a b c ], (doc/:ul/:li/'text()').map(&:to_s)
-    end
-
-    def test_link
-      doc = Hpricot.parse(StringIO.new( RDFormatting.to_html("((<Hoge>))") ))
-      assert_equal 'Hoge', (doc/:a).text
-      assert_equal 'Hoge', (doc/:a)[0]['href']
     end
   end
 end
