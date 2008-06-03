@@ -32,10 +32,10 @@ class ChangesetTest < Test::Unit::TestCase
     
     c = Changeset.new(:repository => Project.find(1).repository,
                       :committed_on => Time.now,
-                      :comments => 'New commit (#2). Fixes #1')
+                      :comments => 'New commit (#2). Fixes #1, [ruby-dev:3]')
     c.scan_comment_for_issue_ids
     
-    assert_equal [1, 2], c.issue_ids.sort
+    assert_equal [1, 2, 3], c.issue_ids.sort
     fixed = Issue.find(1)
     assert fixed.closed?
     assert_equal 90, fixed.done_ratio

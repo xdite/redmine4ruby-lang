@@ -55,8 +55,6 @@ class Changeset < ActiveRecord::Base
   def after_create
     scan_comment_for_issue_ids
   end
-  require 'pp'
-  
   def scan_comment_for_issue_ids
     return if comments.blank?
     # keywords used to reference issues
@@ -79,10 +77,14 @@ class Changeset < ActiveRecord::Base
       referenced_issues += repository.project.issues.find_all_by_id(target_issue_ids)
     end
     
-    comments.scan(Regexp.new("(#{kw_regexp})[\s:]+(([\s,;&]*#?\\d+)+)", Regexp::IGNORECASE)).each do |match|
+    comments.scan(/(#{kw_regexp})[\s:]+(([\s,;&]*#?(?:\d+|\[[\w_-]+:\d+\]))+)/i) do |match|
       action = match[0]
-      target_issue_ids = match[1].scan(/\d+/)
+      target_issue_ids = match[1].scan(/\d+(?!\])/)
       target_issues = repository.project.issues.find_all_by_id(target_issue_ids)
+      target_issues += match[1].scan(/\[([\w_-]+):(\d+)\]/).map{|name,number|
+        repository.project.issues.find(:first, :include => [:mailing_list],
+                                       :conditions => ['mailing_lists.name = ? AND mailing_list_code = ?', name, number])
+      }
       if fix_status && fix_keywords.include?(action.downcase)
         # update status of issues
         logger.debug "Issues fixed by changeset #{self.revision}: #{issue_ids.join(', ')}." if logger && logger.debug?
