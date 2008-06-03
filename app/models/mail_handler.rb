@@ -124,7 +124,7 @@ class MailHandler < ActionMailer::Base
       logger.error("cycled email's inconsistance: x-redmine-project\nissue is;\n %s\nbut email is;\n%s" % [issue.to_yaml, email])
       return
     end
-    unless email.subject.include?(issue.subject)
+    unless NKF.nkf('-w -m0 -x', email.subject).include?(issue.subject)
       logger.error("cycled email's inconsistance: subject\nissue is;\n %s\nbut email is;\n%s" % [issue.to_yaml, email])
       return
     end
