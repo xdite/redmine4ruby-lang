@@ -27,7 +27,10 @@ class MailingListsControllerTest < Test::Unit::TestCase
 
   def test_should_create_mailing_list
     assert_difference('MailingList.count') do
-      post :add, :mailing_list => { :name => 'created by test', :address => 'test@example.com', :locale => 'ja' }
+      post :add, :mailing_list => { 
+        :name => 'created by test', :address => 'test@example.com', :locale => 'ja', 
+        :archive_url => 'http://archive.example/msg/%1$s' 
+      }
     end
 
     assert_redirected_to :controller => 'mailing_lists'
