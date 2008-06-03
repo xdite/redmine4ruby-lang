@@ -26,7 +26,7 @@ class MailHandler < ActionMailer::Base
   # Processes incoming emails
   def receive(email)
     tracker_tags = Tracker.find(:all).map{|tracker|
-      /\[(#{Regexp.escape tracker.name}):(.*?)\]/i
+      /\[(#{Regexp.escape tracker.name})\s*:\s*(.*?)\]/i
     }
     return resolve_issue(email) if email.header['x-redmine-issue-id']
 
@@ -109,7 +109,7 @@ class MailHandler < ActionMailer::Base
       next unless tracker
 
       subject = email.subject.sub(/\A.*?\[#{Regexp.escape tracker_name}:.+?\]\s*/, '')
-      project.issues.create! :subject => subject, :description => email.body, :tracker => tracker,
+      project.issues.create! :subject => utf8ize(subject), :description => email.body, :tracker => tracker,
         :status => IssueStatus.default, :priority => Enumeration::get_values('IPRI').first,
         :author => user, :mailing_list => ml, :mailing_list_code => ml_code, :mail_id => msg_id
     end
@@ -124,7 +124,7 @@ class MailHandler < ActionMailer::Base
       logger.error("cycled email's inconsistance: x-redmine-project\nissue is;\n %s\nbut email is;\n%s" % [issue.to_yaml, email])
       return
     end
-    unless NKF.nkf('-w -m0 -x', email.subject).include?(issue.subject)
+    unless utf8ize(email.subject).include?(issue.subject)
       logger.error("cycled email's inconsistance: subject\nissue is;\n %s\nbut email is;\n%s" % [issue.to_yaml, email])
       return
     end
@@ -145,5 +145,9 @@ class MailHandler < ActionMailer::Base
     return ml ? [ml, Integer(headers['x-mail-count'].body), headers['message-id'].body] : nil
   rescue ArgumentError
     return nil
+  end
+
+  def utf8ize(str)
+    NKF.nkf('-w -m0 -x', str)
   end
 end
