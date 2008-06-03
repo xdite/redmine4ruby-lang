@@ -10,7 +10,7 @@ port = options['port'] || options[:port] || 12346
 
 begin
   receiver = DRbObject.new_with_uri("druby://#{host}:#{port}")
-  puts "setting: %s" % receiver.smtp_settings.inspect
+  puts "Started at %s, Uptime: %s\nSettings: %s" % [receiver.started_at, receiver.uptime, receiver.smtp_settings.inspect]
 rescue
   $stderr.puts $!.message, $!.backtrace
 end

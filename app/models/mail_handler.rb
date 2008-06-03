@@ -22,6 +22,13 @@ class MailHandler < ActionMailer::Base
   def logger
     self.class.logger
   end
+
+  def self.started_at
+    @started_at ||= Time.now
+  end
+  def self.uptime
+    Time.now - started_at
+  end
   
   # Processes incoming emails
   def receive(email)

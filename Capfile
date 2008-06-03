@@ -28,24 +28,26 @@ namespace :db do
   end
   after 'deploy:update_code', 'db:apply_config'
 
-  desc "Prepares backup/ directory"
-  task :prepare_backup do
-    run "ln -s #{shared_path}/backup #{latest_release}/backup"
-  end
-  after 'deploy:update_code', 'db:prepare_backup'
-
-  desc "Backup the remote production database"
-  task :backup, :roles => :db, :only => { :primary => true } do
-    run <<-"CMD"
+  namespace :backup do
+    desc "Backups the production database of remote servers"
+    task :default, :roles => :db, :only => { :primary => true } do
+      run <<-"CMD"
       cd #{latest_release} &&
       /usr/bin/env PATH='#{PATH}' #{latest_release}/script/database/backup
     CMD
-  end
-  before 'deploy:migrate', 'db:backup'
+    end
+    before 'deploy:migrate', 'db:backup:default'
 
-  desc "List the backups of the remote production database"
-  task :list_backup do
-    run "ls #{shared_path}/backup/"
+    desc "Prepares backup/ directory"
+    task :prepare do
+      run "ln -s #{shared_path}/backup #{latest_release}/backup"
+    end
+    after 'deploy:update_code', 'db:backup:list'
+
+    desc "List the backups of the remote production database"
+    task :list do
+      run "ls #{shared_path}/backup/"
+    end
   end
 end
 
@@ -57,6 +59,7 @@ namespace :mail do
       /usr/bin/env RAILS_ENV=production #{latest_release}/script/daemons start
     CMD
   end
+
   desc 'restarts mail receiving daemon'
   task :restart do
     run <<-"CMD"
@@ -64,6 +67,8 @@ namespace :mail do
       /usr/bin/env RAILS_ENV=production #{latest_release}/script/daemons restart
     CMD
   end
+  after 'update', 'mail:restart'
+
   desc 'stops mail receiving daemon'
   task :stop do
     run <<-"CMD"
@@ -71,6 +76,7 @@ namespace :mail do
       /usr/bin/env RAILS_ENV=production #{latest_release}/script/daemons stop
     CMD
   end
+
   task :check do
     run <<-"CMD"
       cd #{latest_release} &&
