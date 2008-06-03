@@ -83,6 +83,12 @@ namespace :mail do
       /usr/bin/env RAILS_ENV=production #{latest_release}/script/mail_checker
     CMD
   end
+
+  task :list do
+    run <<-"CMD"
+      ls #{latest_release}/tmp/mail
+    CMD
+  end
 end
 
 desc '[internal]'
