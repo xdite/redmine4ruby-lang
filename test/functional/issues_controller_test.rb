@@ -164,6 +164,20 @@ class IssuesControllerTest < Test::Unit::TestCase
                                             :content => /Notes/ } }
   end
 
+  def test_show_via_mail_number
+    get :show, :id => 'ruby-dev:1'
+    assert_response :success
+    assert_template 'show.rhtml'
+    assert_not_nil assigns(:issue)
+    assert_equal Issue.find(1), assigns(:issue)
+    
+    # anonymous role is allowed to add a note
+    assert_tag :tag => 'form',
+               :descendant => { :tag => 'fieldset',
+                                :child => { :tag => 'legend', 
+                                            :content => /Notes/ } }
+  end
+
   def test_get_new
     @request.session[:user_id] = 2
     get :new, :project_id => 1, :tracker_id => 1
@@ -252,6 +266,15 @@ class IssuesControllerTest < Test::Unit::TestCase
     assert_not_nil assigns(:issue)
     assert_equal Issue.find(1), assigns(:issue)
   end
+
+  def test_get_edit_via_mail_number
+    @request.session[:user_id] = 2
+    get :edit, :id => 'ruby-dev:1'
+    assert_response :success
+    assert_template 'edit'
+    assert_not_nil assigns(:issue)
+    assert_equal Issue.find(1), assigns(:issue)
+  end
   
   def test_get_edit_with_params
     @request.session[:user_id] = 2
@@ -289,11 +312,27 @@ class IssuesControllerTest < Test::Unit::TestCase
     assert_equal new_subject, issue.subject
     
     mail = ActionMailer::Base.deliveries.last
-    assert_kind_of TMail::Mail, mail
-    assert mail.bcc.include?(mailing_lists(:ruby_dev).address)
-    assert !mail.bcc.include?(mailing_lists(:ruby_core).address)
-    assert mail.subject.starts_with?("[#{issue.project.name} - #{issue.tracker.name} ##{issue.id}]")
-    assert mail.body.include?("Subject changed from #{old_subject} to #{new_subject}")
+    assert_nil mail
+    # assert_kind_of TMail::Mail, mail
+    # assert mail.subject.starts_with?("[#{issue.project.name} - #{issue.tracker.name} ##{issue.id}]")
+    # assert mail.body.include?("Subject changed from #{old_subject} to #{new_subject}")
+  end
+
+  def test_post_edit_via_mail_number
+    @request.session[:user_id] = 2
+    ActionMailer::Base.deliveries.clear
+    
+    issue = Issue.find(1)
+    old_subject = issue.subject
+    new_subject = 'Subject modified by IssuesControllerTest#test_post_edit'
+    
+    post :edit, :id => 'ruby-dev:1', :issue => {:subject => new_subject}
+    assert_redirected_to 'issues/show/1'
+    issue.reload
+    assert_equal new_subject, issue.subject
+    
+    mail = ActionMailer::Base.deliveries.last
+    assert_nil mail
   end
   
   def test_post_edit_with_status_and_assignee_change
@@ -374,9 +413,10 @@ class IssuesControllerTest < Test::Unit::TestCase
     assert_equal User.anonymous, j.user
     
     mail = ActionMailer::Base.deliveries.last
-    assert mail.body.include?('testfile.txt')
-    assert mail.bcc.include?(mailing_lists(:ruby_dev).address)
-    assert !mail.bcc.include?(mailing_lists(:ruby_core).address)
+    assert_nil mail
+    # assert mail.body.include?('testfile.txt')
+    # assert mail.bcc.include?(mailing_lists(:ruby_dev).address)
+    # assert !mail.bcc.include?(mailing_lists(:ruby_core).address)
   end
   
   def test_post_edit_with_no_change
@@ -418,6 +458,13 @@ class IssuesControllerTest < Test::Unit::TestCase
   def test_move_one_issue_to_another_project
     @request.session[:user_id] = 1
     post :move, :id => 1, :new_project_id => 2
+    assert_redirected_to 'projects/ecookbook/issues'
+    assert_equal 2, Issue.find(1).project_id
+  end
+
+  def test_move_one_issue_to_another_project_via_mail_number
+    @request.session[:user_id] = 1
+    post :move, :id => 'ruby-dev:1', :new_project_id => 2
     assert_redirected_to 'projects/ecookbook/issues'
     assert_equal 2, Issue.find(1).project_id
   end
@@ -509,6 +556,16 @@ class IssuesControllerTest < Test::Unit::TestCase
     assert_nil TimeEntry.find_by_issue_id(2)
     @request.session[:user_id] = 2
     post :destroy, :id => 2
+    assert_redirected_to 'projects/ecookbook/issues'
+    assert_nil Issue.find_by_id(2)
+  end
+
+  def test_destroy_issue_with_no_time_entries_via_mail_number
+    issue = Issue.find(2); issue.mailing_list_code = 2; issue.save!
+
+    assert_nil TimeEntry.find_by_issue_id(2)
+    @request.session[:user_id] = 2
+    post :destroy, :id => 'ruby-dev:2'
     assert_redirected_to 'projects/ecookbook/issues'
     assert_nil Issue.find_by_id(2)
   end

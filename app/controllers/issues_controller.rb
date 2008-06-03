@@ -353,7 +353,13 @@ class IssuesController < ApplicationController
   
 private
   def find_issue
-    @issue = Issue.find(params[:id], :include => [:project, :tracker, :status, :author, :priority, :category])
+    if /\A([\w_-]+):(\d+)\z/ === params[:id]
+      ml, number = MailingList.find_by_name($1), $2
+      @issue = Issue.find_by_mailing_list_id_and_mailing_list_code(ml, number, :include => [:project, :tracker, :status, :author, :priority, :category])
+      raise ActiveRecord::RecordNotFound unless @issue
+    else
+      @issue = Issue.find(params[:id], :include => [:project, :tracker, :status, :author, :priority, :category])
+    end
     @project = @issue.project
   rescue ActiveRecord::RecordNotFound
     render_404
@@ -361,7 +367,12 @@ private
   
   # Filter for bulk operations
   def find_issues
-    @issues = Issue.find_all_by_id(params[:id] || params[:ids])
+    if /\A([\w_-]+):(\d+)\z/ === params[:id]
+      ml, number = MailingList.find_by_name($1), $2
+      @issues = Issue.find_all_by_mailing_list_id_and_mailing_list_code(ml, number, :include => [:project, :tracker, :status, :author, :priority, :category])
+    else
+      @issues = Issue.find_all_by_id(params[:id] || params[:ids])
+    end
     raise ActiveRecord::RecordNotFound if @issues.empty?
     projects = @issues.collect(&:project).compact.uniq
     if projects.size == 1
