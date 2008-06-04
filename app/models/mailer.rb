@@ -27,6 +27,7 @@ class Mailer < ActionMailer::Base
                     'Issue-Id' => issue.id,
                     'Issue-Author' => issue.author.login
     redmine_headers 'Issue-Assignee' => issue.assigned_to.login if issue.assigned_to
+    from name_addr(issue.author)
     recipients issue.mailing_list.address
     bcc issue.recipients
     subject "[#{issue.project.name} - #{issue.tracker.name} ##{issue.id}] (#{issue.status.name}) #{issue.subject}"
@@ -40,6 +41,8 @@ class Mailer < ActionMailer::Base
                     'Issue-Id' => issue.id,
                     'Issue-Author' => issue.author.login
     redmine_headers 'Issue-Assignee' => issue.assigned_to.login if issue.assigned_to
+    headers 'References' => issue.mail_id if issue.mail_id
+    from name_addr(issue.author)
     recipients issue.mailing_list.address
     # recipients and watchers in bcc
     bcc(issue.watcher_recipients & issue.recipients)
@@ -55,6 +58,7 @@ class Mailer < ActionMailer::Base
   def document_added(document)
     redmine_headers 'Project' => document.project.identifier
     recipients document.project.recipients
+    from name_addr(User.current)
     subject "[#{document.project.name}] #{l(:label_document_new)}: #{document.title}"
     body :document => document,
          :document_url => url_for(:controller => 'documents', :action => 'show', :id => document)
@@ -147,6 +151,12 @@ class Mailer < ActionMailer::Base
   end
 
   private
+  def name_addr(name)
+    addr = TMail::Address.parse(Setting.mail_from)
+    addr.name = name.to_s
+    return addr.to_s
+  end
+
   def initialize_defaults(method_name)
     super
     set_language_if_valid Setting.default_language
