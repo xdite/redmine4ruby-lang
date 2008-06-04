@@ -4,8 +4,6 @@ require 'mongrel_cluster/recipes'
 load 'config/deploy'
 autoload :ERB, 'erb'
 
-PATH="/opt/csw/bin:/opt/csw/mysql5/bin:/usr/local/bin:/usr/bin:/bin"
-
 namespace :db do
   desc "Generate config/database.yml for production environment after deploy:setup"
   task :init_config, :only => "app" do
@@ -33,7 +31,7 @@ namespace :db do
     task :default, :roles => :db, :only => { :primary => true } do
       run <<-"CMD"
       cd #{latest_release} &&
-      /usr/bin/env PATH='#{PATH}' #{latest_release}/script/database/backup
+      /usr/bin/env PATH='#{db_bin_path}' #{latest_release}/script/database/backup
     CMD
     end
     before 'deploy:migrate', 'db:backup:default'
@@ -42,7 +40,6 @@ namespace :db do
     task :prepare do
       run "ln -s #{shared_path}/backup #{latest_release}/backup"
     end
-    after 'deploy:update_code', 'db:backup:list'
 
     desc "List the backups of the remote production database"
     task :list do
@@ -67,7 +64,7 @@ namespace :mail do
       /usr/bin/env RAILS_ENV=production #{latest_release}/script/daemons restart
     CMD
   end
-  after 'update', 'mail:restart'
+  after 'deploy:update', 'mail:restart'
 
   desc 'stops mail receiving daemon'
   task :stop do

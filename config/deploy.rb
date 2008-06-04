@@ -5,6 +5,8 @@ set :application, "redmine"
 # servers (which is the default), you can specify the actual location
 # via the :deploy_to variable:
 set :deploy_to, "/export/home/yugui/redmine"
+set :bin_path, "/usr/local/bin:/opt/csw/bin:/usr/bin:/bin"
+set :db_bin_path, "/usr/local/bin:/opt/csw/bin:/usr/bin:/bin:/opt/csw/mysql5/bin"
 
 
 # If you aren't using Subversion to manage your source code, specify
@@ -18,7 +20,7 @@ set :deploy_via, :copy
 set :copy_compression, :zip
 
 set :mongrel_conf, "#{current_path}/config/mongrel_cluster.yml"
-set :mongrel_rails, "env PATH=$PATH:/usr/local/bin:/opt/csw/bin mongrel_rails"
+set :mongrel_rails, "env PATH=#{bin_path} mongrel_rails"
 set :rake, "/opt/csw/bin/rake"
 
 role :app, "redmine.ruby-lang.org"
