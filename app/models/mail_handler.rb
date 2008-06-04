@@ -125,6 +125,8 @@ class MailHandler < ActionMailer::Base
   def resolve_issue(email)
     id = email.header['x-redmine-issue-id'].body
     issue = Issue.find(id)
+    return if issue.mailing_list_code
+
     ml, ml_code, msg_id = identify_mail_by_x_ml_header(email.header)
 
     unless issue.project.identifier == email.header['x-redmine-project'].body
