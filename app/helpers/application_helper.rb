@@ -280,6 +280,7 @@ module ApplicationHelper
     # Examples:
     #   Issues:
     #     #52 -> Link to issue #52
+    #     [ruby-dev:255] -> Link to the issue corresponding to [ruby-dev:255].
     #   Changesets:
     #     r52 -> Link to revision 52
     #     commit:a85130f -> Link to scmid starting with a85130f
@@ -299,6 +300,16 @@ module ApplicationHelper
     #     source:some/file#L120 -> Link to line 120 of the file
     #     source:some/file@52#L120 -> Link to line 120 of the file's revision 52
     #     export:some/file -> Force the download of the file
+    text = text.gsub(%r{\[([\w_-]+):(\d+)\]}) do |m|
+      issue = Issue.find_by_mailing_list_code($2, :include => [:project, :status, :mailing_list],
+                                              :conditions => ["#{Project.visible_by(User.current)} AND mailing_lists.name = ?", $1])
+      next m unless issue
+      link = link_to(m, {:only_path => only_path, :controller => 'issues', :action => 'show', :id => issue.id},
+                     :class => (issue.closed? ? 'issue closed' : 'issue'),
+                     :title => "#{truncate(issue.subject, 100)} (#{issue.status.name})")
+      link = content_tag('del', link) if issue.closed?
+      next link
+    end
     text = text.gsub(%r{([\s\(,-^])(!)?(attachment|document|version|commit|source|export)?((#|r)(\d+)|(:)([^"\s<>][^\s<>]*|"[^"]+"))(?=[[:punct:]]|\s|<|$)}) do |m|
       leading, esc, prefix, sep, oid = $1, $2, $3, $5 || $7, $6 || $8
       link = nil
