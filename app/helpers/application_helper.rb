@@ -218,7 +218,7 @@ module ApplicationHelper
     end
     
     text = 
-      case Setting.text_formatting
+      case (options[:formatting] || Setting.text_formatting)
       when 'textile'
         Redmine::WikiFormatting.to_html(text) { |macro, args| exec_macro(macro, obj, args) }
       when 'rd'
@@ -310,13 +310,13 @@ module ApplicationHelper
       link = content_tag('del', link) if issue.closed?
       next link
     end
-    text = text.gsub(%r{([\s\(,-^])(!)?(attachment|document|version|commit|source|export)?((#|r)(\d+)|(:)([^"\s<>][^\s<>]*|"[^"]+"))(?=[[:punct:]]|\s|<|$)}) do |m|
+    text = text.gsub(%r{([\s\(,-^])(!)?(attachment|document|version|commit|source|export)?((#|r|rev\.)(\d+|[0-9A-Fa-f]{40})|(:)([^"\s<>][^\s<>]*|"[^"]+"))(?=[[:punct:]]|\s|<|$)}o) do |m|
       leading, esc, prefix, sep, oid = $1, $2, $3, $5 || $7, $6 || $8
       link = nil
       if esc.nil?
-        if prefix.nil? && sep == 'r'
+        if prefix.nil? && (sep == 'r' or sep == 'rev.')
           if project && (changeset = project.changesets.find_by_revision(oid))
-            link = link_to("r#{oid}", {:only_path => only_path, :controller => 'repositories', :action => 'revision', :id => project, :rev => oid},
+            link = link_to("#{sep}#{oid}", {:only_path => only_path, :controller => 'repositories', :action => 'revision', :id => project, :rev => oid},
                                       :class => 'changeset',
                                       :title => truncate(changeset.comments, 100))
           end

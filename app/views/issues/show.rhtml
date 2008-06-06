@@ -61,7 +61,7 @@ end %>
 
 <p><strong><%=l(:field_description)%></strong></p>
 <div class="issue-description">
-<pre><%=h @issue.description %></pre>
+<pre><%= textilizable @issue.description, :formatting => 'simple' %></pre>
 <%= textilizable '', :attachments => @issue.attachments %>
 </div>
 
