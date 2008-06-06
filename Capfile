@@ -40,7 +40,7 @@ namespace :db do
     task :prepare do
       run "ln -s #{shared_path}/backup #{latest_release}/backup"
     end
-    before 'deploy:update_code', 'db:backup:prepare'
+    after 'deploy:update_code', 'db:backup:prepare'
 
     desc "List the backups of the remote production database"
     task :list do
