@@ -223,6 +223,8 @@ module ApplicationHelper
         Redmine::WikiFormatting.to_html(text) { |macro, args| exec_macro(macro, obj, args) }
       when 'rd'
         Redmine::RDFormatting.to_html(text) { |macro, args| exec_macro(macro, obj, args) }
+      when 'null'
+        auto_link(h(text))
       else
         simple_format(auto_link(h(text)))
       end

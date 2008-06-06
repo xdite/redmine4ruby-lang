@@ -26,7 +26,7 @@ module JournalsHelper
                                                 :title => l(:button_edit))
       content << content_tag('div', links.join(' '), :class => 'contextual')
     end
-    content << content_tag('pre', textilizable(journal.notes, :formattiong => 'simple'), :class => 'detail')
+    content << content_tag('pre', textilizable(journal.notes, :formatting => 'null'), :class => 'detail')
     content_tag('div', content, :id => "journal-#{journal.id}-notes", :class => (editable ? 'wiki editable' : 'wiki'))
   end
   
