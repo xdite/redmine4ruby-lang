@@ -253,6 +253,8 @@ module ApplicationHelper
     #   [[project:|mytext]]
     #   [[project:mypage]]
     #   [[project:mypage|mytext]]
+    # Mailing List links
+    #   [[ruby-dev:12345]]
     text = text.gsub(/(!)?(\[\[([^\]\n\|]+)(\|([^\]\n\|]+))?\]\])/) do |m|
       link_project = project
       esc, all, page, title = $1, $2, $3, $5
@@ -260,7 +262,7 @@ module ApplicationHelper
         if page =~ /^([\w_-]+):(\d+)$/
           ml, number = $1, $2
           ml = MailingList.find_by_name($1)
-          next link_to "[#{page}]", ml.archive_url % [number] if ml
+          next link_to((title || "[#{page}]"), ml.archive_url % [number]) if ml
         end
         if page =~ /^([^\:]+)\:(.*)$/
           link_project = Project.find_by_name($1) || Project.find_by_identifier($1)
