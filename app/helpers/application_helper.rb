@@ -257,6 +257,11 @@ module ApplicationHelper
       link_project = project
       esc, all, page, title = $1, $2, $3, $5
       if esc.nil?
+        if page =~ /^([\w_-]+):(\d+)$/
+          ml, number = $1, $2
+          ml = MailingList.find_by_name($1)
+          next link_to "[#{page}]", ml.archive_url % [number] if ml
+        end
         if page =~ /^([^\:]+)\:(.*)$/
           link_project = Project.find_by_name($1) || Project.find_by_identifier($1)
           page = $2
