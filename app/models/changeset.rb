@@ -85,6 +85,7 @@ class Changeset < ActiveRecord::Base
         repository.project.issues.find(:first, :include => [:mailing_list],
                                        :conditions => ['mailing_lists.name = ? AND mailing_list_code = ?', name, number])
       }
+      target_issues = target_issues.compact
       if fix_status && fix_keywords.include?(action.downcase)
         # update status of issues
         logger.debug "Issues fixed by changeset #{self.revision}: #{issue_ids.join(', ')}." if logger && logger.debug?
