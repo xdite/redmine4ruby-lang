@@ -65,48 +65,60 @@ class Changeset < ActiveRecord::Base
     fix_status = IssueStatus.find_by_id(Setting.commit_fix_status_id)
     done_ratio = Setting.commit_fix_done_ratio.blank? ? nil : Setting.commit_fix_done_ratio.to_i
     
+    ref_keyword_any = true if ref_keywords.delete('*')
+    fix_keyword_any = true if fix_keywords.delete('*')
     kw_regexp = (ref_keywords + fix_keywords).collect{|kw| Regexp.escape(kw)}.join("|")
-    return if kw_regexp.blank?
-    
+    return if kw_regexp.blank? and !ref_keyword_any and !fix_keyword_any
+
     referenced_issues = []
-    
-    if ref_keywords.delete('*')
-      # find any issue ID in the comments
-      target_issue_ids = []
-      comments.scan(%r{([\s\(,-]|^)#(\d+)(?=[[:punct:]]|\s|<|$)}).each { |m| target_issue_ids << m[1] }
-      referenced_issues += repository.project.issues.find_all_by_id(target_issue_ids)
-    end
-    
-    comments.scan(/(#{kw_regexp})[\s:]+(([\s,;&]*#?(?:\d+|\[[\w_-]+:\d+\]))+)/i) do |match|
-      action = match[0]
-      target_issue_ids = match[1].scan(/\d+(?!\])/)
+    comments.scan(%r!
+       (?:(#{kw_regexp}) [:\s])?
+       ((?:
+         \s*
+         (?:[,;&]|and)?        # separator
+         \s*
+         (?:
+           \#?\d+            # issue id
+          |\[[\w_-]+:\d+\]   # mail number
+         )
+      )+)
+    !ix) do |keyword, ref_texts|
+      target_issue_ids = ref_texts.scan(/\#(\d+)/).map(&:first)
       target_issues = repository.project.issues.find_all_by_id(target_issue_ids)
-      target_issues += match[1].scan(/\[([\w_-]+):(\d+)\]/).map{|name,number|
+
+      target_issues += ref_texts.scan(/\[([\w_-]+):(\d+)\]/).map{|name,number|
         repository.project.issues.find(:first, :include => [:mailing_list],
                                        :conditions => ['mailing_lists.name = ? AND mailing_list_code = ?', name, number])
       }
-      target_issues = target_issues.compact
-      if fix_status && fix_keywords.include?(action.downcase)
-        # update status of issues
-        logger.debug "Issues fixed by changeset #{self.revision}: #{issue_ids.join(', ')}." if logger && logger.debug?
-        target_issues.each do |issue|
-          # the issue may have been updated by the closure of another one (eg. duplicate)
-          issue.reload
-          # don't change the status is the issue is closed
-          next if issue.status.is_closed?
-          user = committer_user || User.anonymous
-          csettext = "r#{self.revision}"
-          if self.scmid && (! (csettext =~ /^r[0-9]+$/))
-            csettext = "commit:\"#{self.scmid}\""
+      target_issues = target_issues.compact.uniq
+
+      if ref_keyword_any || keyword && ref_keywords.include?(keyword.downcase)
+        referenced_issues += target_issues
+      end
+      if fix_status
+        if ( fix_keyword_any && !(keyword && ref_keywords.include?(keyword.downcase)) ) || 
+          ( keyword && fix_keywords.include?(keyword.downcase) ) then
+          referenced_issues += target_issues
+          # update status of issues
+          logger.debug "Issues fixed by changeset #{self.revision}: #{target_issues.map(&:id).join(', ')}." if logger && logger.debug?
+          target_issues.each do |issue|
+            # the issue may have been updated by the closure of another one (eg. duplicate)
+            issue.reload
+            # don't change the status is the issue is closed
+            next if issue.status.is_closed?
+            user = committer_user || User.anonymous
+            csettext = "r#{self.revision}"
+            if self.scmid && (! (csettext =~ /^r[0-9]+$/))
+              csettext = "commit:\"#{self.scmid}\""
+            end
+            journal = issue.init_journal(user, l(:text_status_changed_by_changeset, csettext))
+            issue.status = fix_status
+            issue.done_ratio = done_ratio if done_ratio
+            issue.save
+            Mailer.deliver_issue_edit(journal) if Setting.notified_events.include?('issue_updated')
           end
-          journal = issue.init_journal(user, l(:text_status_changed_by_changeset, csettext))
-          issue.status = fix_status
-          issue.done_ratio = done_ratio if done_ratio
-          issue.save
-          Mailer.deliver_issue_edit(journal) if Setting.notified_events.include?('issue_updated')
         end
       end
-      referenced_issues += target_issues
     end
     
     self.issues = referenced_issues.uniq

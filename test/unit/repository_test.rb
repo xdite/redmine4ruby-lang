@@ -58,7 +58,8 @@ class RepositoryTest < Test::Unit::TestCase
     fixed_issue = Issue.find(1)
     assert !fixed_issue.status.is_closed?
     old_status = fixed_issue.status
-        
+    fixed_issue.mailing_list.update_attribute(:locale, :en)
+
     Repository.scan_changesets_for_issue_ids
     assert_equal [101, 102], Issue.find(3).changeset_ids
     

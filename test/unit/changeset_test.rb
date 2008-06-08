@@ -30,15 +30,18 @@ class ChangesetTest < Test::Unit::TestCase
     Setting.commit_ref_keywords = '*'
     Setting.commit_fix_keywords = 'fixes , closes'
     
-    c = Changeset.new(:repository => Project.find(1).repository,
+    c = Changeset.new(:repository => issues(:not_fixed1).project.repository,
                       :committed_on => Time.now,
-                      :comments => 'New commit (#2). Fixes #1, [ruby-dev:3]')
+                      :comments => 'New commit (#102). Fixes #101, [ruby-dev:103]')
     c.scan_comment_for_issue_ids
     
-    assert_equal [1, 2, 3], c.issue_ids.sort
-    fixed = Issue.find(1)
-    assert fixed.closed?
-    assert_equal 90, fixed.done_ratio
+    assert_equal [101, 102, 103], c.issue_ids.sort
+    [issues(:not_fixed1), issues(:not_fixed3)].each do |fixed|
+      fixed.reload
+      assert fixed.closed?
+      assert_equal 90, fixed.done_ratio
+    end
+    assert !issues(:not_fixed2).reload.closed?
   end
   
   def test_ref_keywords_any_line_start
@@ -50,6 +53,26 @@ class ChangesetTest < Test::Unit::TestCase
     c.scan_comment_for_issue_ids
 
     assert_equal [1], c.issue_ids.sort
+  end
+
+  def test_ref_keywords_any_2
+    Setting.commit_fix_status_id = IssueStatus.find(:first, :conditions => ["is_closed = ?", true]).id
+    Setting.commit_fix_done_ratio = 100
+    Setting.commit_ref_keywords = 'see'
+    Setting.commit_fix_keywords = '*'
+    
+    c = Changeset.new(:repository => issues(:not_fixed1).project.repository,
+                      :committed_on => Time.now,
+                      :comments => 'New commit #102, [ruby-dev:103]. see #101')
+    c.scan_comment_for_issue_ids
+    
+    assert_equal [101, 102, 103], c.issue_ids.sort
+    [issues(:not_fixed2), issues(:not_fixed3)].each do |fixed|
+      fixed.reload
+      assert fixed.closed?
+      assert_equal 100, fixed.done_ratio
+    end
+    assert !issues(:not_fixed1).reload.closed?
   end
 
   def test_previous
