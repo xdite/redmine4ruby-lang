@@ -53,6 +53,7 @@ class MailerTest < Test::Unit::TestCase
       mail = ActionMailer::Base.deliveries.last
       assert_kind_of TMail::Mail, mail
       assert_equal 'redmine@somenet.foo', mail.from.first
+      assert mail.header['from'].body.include?(issue.author.to_s)
     end
   end
   def test_issue_add_by_anonymous
@@ -62,6 +63,7 @@ class MailerTest < Test::Unit::TestCase
       mail = ActionMailer::Base.deliveries.last
       assert_kind_of TMail::Mail, mail
       assert_equal 'redmine@somenet.foo', mail.from.first
+      assert mail.header['from'].body.include?('Anonymous')
   end
 
   def test_issue_edit
@@ -69,6 +71,12 @@ class MailerTest < Test::Unit::TestCase
     GLoc.valid_languages.each do |lang|
       Setting.default_language = lang.to_s
       assert Mailer.deliver_issue_edit(journal)
+
+      mail = ActionMailer::Base.deliveries.last
+      assert_kind_of TMail::Mail, mail
+      assert_equal 'redmine@somenet.foo', mail.from.first
+      assert mail.header['from'].body.include?(journal.user.to_s)
+      assert !mail.header['from'].body.include?(journal.issue.author.to_s)
     end
   end
   

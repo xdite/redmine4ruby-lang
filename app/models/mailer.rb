@@ -42,7 +42,7 @@ class Mailer < ActionMailer::Base
                     'Issue-Author' => issue.author.login
     redmine_headers 'Issue-Assignee' => issue.assigned_to.login if issue.assigned_to
     headers 'References' => issue.mail_id if issue.mail_id
-    from name_addr(issue.author)
+    from name_addr(journal.user)
     recipients issue.mailing_list.address
     # recipients and watchers in bcc
     bcc(issue.watcher_recipients & issue.recipients)
