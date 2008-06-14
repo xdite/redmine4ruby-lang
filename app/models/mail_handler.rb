@@ -36,6 +36,7 @@ class MailHandler < ActionMailer::Base
       /\[(#{Regexp.escape tracker.name})\s*:\s*(.*?)\]/i
     }
     return resolve_issue(email) if email.header['x-redmine-issue-id']
+    return if attempt_to_recognize_as_reply(email)
 
     case email.subject
     when %r{\[.*#(\d+)\]}   # find related issue by parsing the subject
@@ -43,9 +44,7 @@ class MailHandler < ActionMailer::Base
     when *tracker_tags
       add_issue_from(email, $1, $2)
     else
-      unless attempt_to_recognize_as_reply(email)
-        logger.warn("Unhandled mail received: #{email.to_s}")
-      end
+      logger.warn("Unhandled mail received: #{email.to_s}")
     end
   rescue
     logger.error($!.message + ':' + $!.backtrace.join("\n"))
@@ -64,7 +63,8 @@ class MailHandler < ActionMailer::Base
     return unless user.allowed_to?(:add_issue_notes, issue.project)
     
     # add the note
-    issue.init_journal(user, email.body.chomp)
+    journal = issue.init_journal(user, email.body.chomp)
+    journal.mail_id = email.header['message-id'].body
     issue.save
   end
 
@@ -79,7 +79,8 @@ class MailHandler < ActionMailer::Base
     return unless user.allowed_to?(:add_issue_notes, issue.project)
 
     # add the note
-    issue.init_journal(user, email.body.chomp)
+    journal = issue.init_journal(user, email.body.chomp)
+    journal.mail_id = email.header['message-id'].body
     issue.save
   end
 
@@ -88,6 +89,8 @@ class MailHandler < ActionMailer::Base
     if in_reply_to
       issue = Issue.find_by_mail_id(in_reply_to.body)
       return issue if issue
+      journal = Journal.find_by_mail_id(in_reply_to.body)
+      return journal.issue if journal and journal.issue
     end
 
     references = email.header['references']

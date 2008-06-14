@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 97) do
+ActiveRecord::Schema.define(:version => 98) do
 
   create_table "attachments", :force => true do |t|
     t.integer  "container_id",                 :default => 0,  :null => false
@@ -217,6 +217,7 @@ ActiveRecord::Schema.define(:version => 97) do
     t.integer  "user_id",                        :default => 0,  :null => false
     t.text     "notes"
     t.datetime "created_on",                                     :null => false
+    t.string   "mail_id"
   end
 
   add_index "journals", ["journalized_id", "journalized_type"], :name => "journals_journalized_id"
