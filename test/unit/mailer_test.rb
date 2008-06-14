@@ -33,7 +33,9 @@ class MailerTest < Test::Unit::TestCase
     mail = ActionMailer::Base.deliveries.last
     assert_kind_of TMail::Mail, mail
     # link to the main ticket
-    assert mail.body.include?("Bug #1: Can't print recipes\nhttps://mydomain.foo/issues/show/1")
+    assert mail.subject.include?("Bug #1")
+    assert mail.subject.include?("Can't print recipes")
+    assert mail.body.include?("https://mydomain.foo/issues/show/1")
     
 =begin
     # link to a referenced ticket
@@ -77,6 +79,7 @@ class MailerTest < Test::Unit::TestCase
       assert_equal 'redmine@somenet.foo', mail.from.first
       assert mail.header['from'].body.include?(journal.user.to_s)
       assert !mail.header['from'].body.include?(journal.issue.author.to_s)
+      assert !mail.body.include?(journal.issue.description)
     end
   end
   
