@@ -197,7 +197,14 @@ class Mailer < ActionMailer::Base
   
   # Renders a message with the corresponding layout
   def render_message(method_name, body)
-    layout = method_name.match(%r{text\.html\.(rhtml|rxml)}) ? 'layout.text.html.rhtml' : 'layout.text.plain.rhtml'
+    layout = case method_name
+             when %r{text\.(html|plain)\.(rhtml|rxml|erb)$}
+               "layout.text.#{$1}.#{$2}"
+             when %r{^[^\.]+\.(erb|rhtml|rxml)$}
+               "layout.#{$1}"
+             else
+               "layout.erb"
+             end
     body[:content_for_layout] = render(:file => method_name, :body => body)
     ActionView::Base.new(template_root, body, self).render(:file => "mailer/#{layout}")
   end

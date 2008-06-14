@@ -56,6 +56,7 @@ class MailerTest < Test::Unit::TestCase
       assert_kind_of TMail::Mail, mail
       assert_equal 'redmine@somenet.foo', mail.from.first
       assert mail.header['from'].body.include?(issue.author.to_s)
+      assert_equal 'text/plain', mail.content_type
       assert_equal "1", mail.header['x-redmine-issue-id'].body
     end
   end
@@ -67,6 +68,7 @@ class MailerTest < Test::Unit::TestCase
       assert_kind_of TMail::Mail, mail
       assert_equal 'redmine@somenet.foo', mail.from.first
       assert mail.header['from'].body.include?('Anonymous')
+      assert_equal 'text/plain', mail.content_type
       assert_equal "1", mail.header['x-redmine-issue-id'].body
   end
 
@@ -84,6 +86,7 @@ class MailerTest < Test::Unit::TestCase
       assert !mail.body.include?(journal.issue.description)
       assert_equal "1", mail.header['x-redmine-issue-id'].body
       assert_equal "1", mail.header['x-redmine-journal-id'].body
+      assert_equal 'text/plain', mail.content_type
       assert mail.header['references'].body.include?("<123456789ABCDEF@redmine.example.com>")
     end
   end
@@ -93,6 +96,9 @@ class MailerTest < Test::Unit::TestCase
     GLoc.valid_languages.each do |lang|
       Setting.default_language = lang.to_s
       assert Mailer.deliver_document_added(document)
+
+      mail = ActionMailer::Base.deliveries.last
+      assert_equal 'text/plain', mail.content_type
     end
   end
   
@@ -101,6 +107,9 @@ class MailerTest < Test::Unit::TestCase
     GLoc.valid_languages.each do |lang|
       Setting.default_language = lang.to_s
       assert Mailer.deliver_attachments_added(attachements)
+
+      mail = ActionMailer::Base.deliveries.last
+      assert_equal 'text/plain', mail.content_type
     end
   end
   
@@ -119,6 +128,9 @@ class MailerTest < Test::Unit::TestCase
     GLoc.valid_languages.each do |lang|
       Setting.default_language = lang.to_s
       assert Mailer.deliver_message_posted(message, recipients)
+
+      mail = ActionMailer::Base.deliveries.last
+      assert_equal 'text/plain', mail.content_type
     end
   end
   
@@ -137,6 +149,9 @@ class MailerTest < Test::Unit::TestCase
       token.user.update_attribute :language, lang.to_s
       token.reload
       assert Mailer.deliver_lost_password(token)
+
+      mail = ActionMailer::Base.deliveries.last
+      assert_equal 'text/plain', mail.content_type
     end
   end
 
@@ -146,6 +161,9 @@ class MailerTest < Test::Unit::TestCase
       token.user.update_attribute :language, lang.to_s
       token.reload
       assert Mailer.deliver_register(token)
+
+      mail = ActionMailer::Base.deliveries.last
+      assert_equal 'text/plain', mail.content_type
     end
   end
 end
