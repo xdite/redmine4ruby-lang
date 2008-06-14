@@ -56,6 +56,7 @@ class MailerTest < Test::Unit::TestCase
       assert_kind_of TMail::Mail, mail
       assert_equal 'redmine@somenet.foo', mail.from.first
       assert mail.header['from'].body.include?(issue.author.to_s)
+      assert_equal "1", mail.header['x-redmine-issue-id'].body
     end
   end
   def test_issue_add_by_anonymous
@@ -66,6 +67,7 @@ class MailerTest < Test::Unit::TestCase
       assert_kind_of TMail::Mail, mail
       assert_equal 'redmine@somenet.foo', mail.from.first
       assert mail.header['from'].body.include?('Anonymous')
+      assert_equal "1", mail.header['x-redmine-issue-id'].body
   end
 
   def test_issue_edit
@@ -80,6 +82,9 @@ class MailerTest < Test::Unit::TestCase
       assert mail.header['from'].body.include?(journal.user.to_s)
       assert !mail.header['from'].body.include?(journal.issue.author.to_s)
       assert !mail.body.include?(journal.issue.description)
+      assert_equal "1", mail.header['x-redmine-issue-id'].body
+      assert_equal "1", mail.header['x-redmine-journal-id'].body
+      assert mail.header['references'].body.include?("<123456789ABCDEF@redmine.example.com>")
     end
   end
   

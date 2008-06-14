@@ -39,9 +39,13 @@ class Mailer < ActionMailer::Base
     issue = journal.journalized
     redmine_headers 'Project' => issue.project.identifier,
                     'Issue-Id' => issue.id,
-                    'Issue-Author' => issue.author.login
+                    'Issue-Author' => issue.author.login,
+                    'Journal-Id' => journal.id
     redmine_headers 'Issue-Assignee' => issue.assigned_to.login if issue.assigned_to
-    headers 'References' => issue.mail_id if issue.mail_id
+    if issue.mail_id
+      mail_ids = [issue.mail_id] + issue.journals.map(&:mail_id)
+      headers['References'] = mail_ids.compact.join(" ")
+    end
     from name_addr(journal.user)
     recipients issue.mailing_list.address
     # recipients and watchers in bcc

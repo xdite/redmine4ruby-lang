@@ -35,7 +35,10 @@ class MailHandler < ActionMailer::Base
     tracker_tags = Tracker.find(:all).map{|tracker|
       /\[(#{Regexp.escape tracker.name})\s*:\s*(.*?)\]/i
     }
-    return resolve_issue(email) if email.header['x-redmine-issue-id']
+    if email.header['x-redmine-issue-id']
+      resolve_issue(email) unless email.header['x-redmine-journal-id']
+      return 
+    end
     return if attempt_to_recognize_as_reply(email)
 
     case email.subject
