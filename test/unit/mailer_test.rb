@@ -50,6 +50,8 @@ class MailerTest < Test::Unit::TestCase
     issue = Issue.find(1)
     GLoc.valid_languages.each do |lang|
       Setting.default_language = lang.to_s
+      issue.mailing_list.locale = lang.to_s
+
       assert Mailer.deliver_issue_add(issue)
 
       mail = ActionMailer::Base.deliveries.last
@@ -58,24 +60,36 @@ class MailerTest < Test::Unit::TestCase
       assert mail.header['from'].body.include?(issue.author.to_s)
       assert_equal 'text/plain', mail.content_type
       assert_equal "1", mail.header['x-redmine-issue-id'].body
+
+      assert (lang==:ja ? 'iso-2022-jp' : 'utf-8'), mail.charset 
     end
   end
   def test_issue_add_by_anonymous
     issue = Issue.find(1)
-    issue.author = User.anonymous
+    GLoc.valid_languages.each do |lang|
+      Setting.default_language = lang.to_s
+      issue.mailing_list.locale = lang.to_s
+      issue.author = User.anonymous
+
       assert Mailer.deliver_issue_add(issue)
+
       mail = ActionMailer::Base.deliveries.last
       assert_kind_of TMail::Mail, mail
       assert_equal 'redmine@somenet.foo', mail.from.first
       assert mail.header['from'].body.include?('Anonymous')
       assert_equal 'text/plain', mail.content_type
       assert_equal "1", mail.header['x-redmine-issue-id'].body
+
+      assert (lang==:ja ? 'iso-2022-jp' : 'utf-8'), mail.charset 
+    end
   end
 
   def test_issue_edit
     journal = Journal.find(1)
     GLoc.valid_languages.each do |lang|
       Setting.default_language = lang.to_s
+      journal.journalized.mailing_list.locale = lang.to_s
+
       assert Mailer.deliver_issue_edit(journal)
 
       mail = ActionMailer::Base.deliveries.last
@@ -88,6 +102,8 @@ class MailerTest < Test::Unit::TestCase
       assert_equal "1", mail.header['x-redmine-journal-id'].body
       assert_equal 'text/plain', mail.content_type
       assert mail.header['references'].body.include?("<123456789ABCDEF@redmine.example.com>")
+
+      assert (lang==:ja ? 'iso-2022-jp' : 'utf-8'), mail.charset 
     end
   end
   
@@ -99,6 +115,8 @@ class MailerTest < Test::Unit::TestCase
 
       mail = ActionMailer::Base.deliveries.last
       assert_equal 'text/plain', mail.content_type
+
+      assert (lang==:ja ? 'iso-2022-jp' : 'utf-8'), mail.charset 
     end
   end
   
@@ -110,6 +128,7 @@ class MailerTest < Test::Unit::TestCase
 
       mail = ActionMailer::Base.deliveries.last
       assert_equal 'text/plain', mail.content_type
+      assert (lang==:ja ? 'iso-2022-jp' : 'utf-8'), mail.charset 
     end
   end
   
@@ -118,6 +137,10 @@ class MailerTest < Test::Unit::TestCase
     GLoc.valid_languages.each do |lang|
       Setting.default_language = lang.to_s
       assert Mailer.deliver_news_added(news)
+
+      mail = ActionMailer::Base.deliveries.last
+      assert_equal 'text/plain', mail.content_type
+      assert (lang==:ja ? 'iso-2022-jp' : 'utf-8'), mail.charset 
     end
   end
   
@@ -140,6 +163,10 @@ class MailerTest < Test::Unit::TestCase
       user.update_attribute :language, lang.to_s
       user.reload
       assert Mailer.deliver_account_information(user, 'pAsswORd')
+
+      mail = ActionMailer::Base.deliveries.last
+      assert_equal 'text/plain', mail.content_type
+      assert (lang==:ja ? 'iso-2022-jp' : 'utf-8'), mail.charset 
     end
   end
 
@@ -152,6 +179,8 @@ class MailerTest < Test::Unit::TestCase
 
       mail = ActionMailer::Base.deliveries.last
       assert_equal 'text/plain', mail.content_type
+
+      assert (lang==:ja ? 'iso-2022-jp' : 'utf-8'), mail.charset 
     end
   end
 
@@ -164,6 +193,8 @@ class MailerTest < Test::Unit::TestCase
 
       mail = ActionMailer::Base.deliveries.last
       assert_equal 'text/plain', mail.content_type
+
+      assert (lang==:ja ? 'iso-2022-jp' : 'utf-8'), mail.charset 
     end
   end
 end

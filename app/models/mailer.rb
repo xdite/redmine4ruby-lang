@@ -1,6 +1,10 @@
 # redMine - project management software
 # Copyright (C) 2006-2007  Jean-Philippe Lang
 #
+# It is from Ruby/GetText 1.91.0, the fix of mojibake for Japanese mails.
+#   gettext/rails.rb - GetText for "Ruby on Rails"
+#   Copyright (C) 2005-2008  Masao Mutoh
+#
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
@@ -15,14 +19,45 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+#:nodoc:
+# ported from Ruby/GetText
+module ActionMailer::ISO2002JP
+  def base64(text, charset="iso-2022-jp", convert=true)
+    if convert
+      if charset == "iso-2022-jp"
+        text = NKF.nkf('-j -m0', text)
+      end
+    end
+    text = TMail::Base64.folding_encode(text)
+    "=?#{charset}?B?#{text}?="
+  end
+
+  def create!(*arg) #:nodoc:
+    super(*arg)
+    if current_language == :ja
+      require 'nkf'
+      @mail.subject = base64(@mail.subject)
+      part = @mail.parts.empty? ? @mail : @mail.parts.first
+      if part.content_type == 'text/plain'
+        part.charset = 'iso-2022-jp'
+        part.body = NKF.nkf('-j', part.body)
+      end
+    end
+    @mail
+  end
+end
+
 class Mailer < ActionMailer::Base
   helper :application
   helper :issues
   helper :custom_fields
   
   include ActionController::UrlWriter
+  include ActionMailer::ISO2002JP
   
   def issue_add(issue)    
+    set_language_if_valid(issue.mailing_list.locale)
+
     redmine_headers 'Project' => issue.project.identifier,
                     'Issue-Id' => issue.id,
                     'Issue-Author' => issue.author.login
@@ -37,6 +72,8 @@ class Mailer < ActionMailer::Base
 
   def issue_edit(journal)
     issue = journal.journalized
+    set_language_if_valid(issue.mailing_list.locale)
+
     redmine_headers 'Project' => issue.project.identifier,
                     'Issue-Id' => issue.id,
                     'Issue-Author' => issue.author.login,
@@ -177,7 +214,7 @@ class Mailer < ActionMailer::Base
   def redmine_headers(h)
     h.each { |k,v| headers["X-Redmine-#{k}"] = v }
   end
-  
+
   # Overrides the create_mail method
   def create_mail
     # Removes the current user from the recipients and cc
@@ -208,6 +245,7 @@ class Mailer < ActionMailer::Base
     body[:content_for_layout] = render(:file => method_name, :body => body)
     ActionView::Base.new(template_root, body, self).render(:file => "mailer/#{layout}")
   end
+
   
   # Makes partial rendering work with Rails 1.2 (retro-compatibility)
   def self.controller_path
