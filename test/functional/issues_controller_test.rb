@@ -216,7 +216,7 @@ class IssuesControllerTest < Test::Unit::TestCase
                :issue => {:tracker_id => 1,
                           :subject => 'This is the test_new issue',
                           :description => 'This is the description',
-                          :mailing_list_id => 1,
+                          :mailing_list_id => mailing_lists(:ruby_core).id,
                           :priority_id => 5,
                           :estimated_hours => ''},
                :custom_fields => {'2' => 'Value for field 2'}
@@ -232,8 +232,8 @@ class IssuesControllerTest < Test::Unit::TestCase
 
     mail = ActionMailer::Base.deliveries.last
     assert_kind_of TMail::Mail, mail
-    assert mail.bcc.include?(mailing_lists(:ruby_dev).address)
-    assert !mail.bcc.include?(mailing_lists(:ruby_core).address)
+    assert !mail.bcc.include?(mailing_lists(:ruby_dev).address)
+    assert mail.bcc.include?(mailing_lists(:ruby_core).address)
     assert mail.subject.starts_with?("[#{issue.project.name} - #{issue.tracker.name} ##{issue.id}]")
     assert mail.body.include?("Issue ##{issue.id} has been reported by #{User.find(2).name}")
   end
@@ -337,6 +337,8 @@ class IssuesControllerTest < Test::Unit::TestCase
   
   def test_post_edit_with_status_and_assignee_change
     issue = Issue.find(1)
+    issue.mailing_list.update_attribute(:locale, 'en')
+
     assert_equal 1, issue.status_id
     @request.session[:user_id] = 2
     assert_difference('TimeEntry.count', 0) do
