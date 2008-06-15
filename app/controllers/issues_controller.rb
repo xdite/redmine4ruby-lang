@@ -138,7 +138,7 @@ class IssuesController < ApplicationController
         @project.custom_fields_for_issues(@issue.tracker).collect { |x| CustomValue.new(:custom_field => x, :customized => @issue) } :
         @issue.custom_values
     else
-      requested_status = IssueStatus.find_by_id(params[:issue][:status_id])
+      requested_status = (params[:issue] && params[:issue][:status_id] ? IssueStatus.find_by_id(params[:issue][:status_id]) : default_status)
       # Check that the user is allowed to apply the requested status
       @issue.status = (@allowed_statuses.include? requested_status) ? requested_status : default_status
       @custom_values = @project.custom_fields_for_issues(@issue.tracker).collect { |x| CustomValue.new(:custom_field => x, 
@@ -149,7 +149,7 @@ class IssuesController < ApplicationController
         attach_files(@issue, params[:attachments])
         flash[:notice] = l(:notice_successful_create)
         Mailer.deliver_issue_add(@issue) if Setting.notified_events.include?('issue_added')
-        redirect_to :controller => 'issues', :action => 'show', :id => @issue,  :project_id => @project
+        redirect_to :controller => 'issues', :action => 'show', :id => @issue
         return
       end		
     end	
@@ -186,13 +186,13 @@ class IssuesController < ApplicationController
         @custom_values = @project.custom_fields_for_issues(@issue.tracker).collect { |x| CustomValue.new(:custom_field => x, :customized => @issue, :value => params["custom_fields"][x.id.to_s]) }
         @issue.custom_values = @custom_values
       end
+      @time_entry = TimeEntry.new(:project => @project, :issue => @issue, :user => User.current, :spent_on => Date.today)
+      @time_entry.attributes = params[:time_entry]
       attachments = attach_files(@issue, params[:attachments])
       attachments.each {|a| journal.details << JournalDetail.new(:property => 'attachment', :prop_key => a.id, :value => a.filename)}
       if @issue.save
         # Log spend time
         if current_role.allowed_to?(:log_time)
-          @time_entry = TimeEntry.new(:project => @project, :issue => @issue, :user => User.current, :spent_on => Date.today)
-          @time_entry.attributes = params[:time_entry]
           @time_entry.save
         end
         unless journal.new_record? or journal.notes.blank?

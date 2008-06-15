@@ -39,7 +39,7 @@
     
     <h1>
       <%=image_tag "ruby-logo.png", :alt => "Programming Language Ruby: ", :id => "ruby-logo" %> 
-      <%- if @project -%>
+      <%- if @project && !@project.new_record? -%>
       <%= link_to h(@project.name), :controller => "projects", :id => @project, :action => 'show'%>
       <%- else -%>
       <%= link_to Setting.app_title, '/' %>

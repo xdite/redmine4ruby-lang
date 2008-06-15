@@ -108,7 +108,9 @@ class ApplicationHelperTest < HelperTestCase
       '!version:"1.0"'              => 'version:"1.0"',
       '!source:/some/file'          => 'source:/some/file',
       # invalid expressions
-      'source:'                     => 'source:'
+      'source:'                     => 'source:',
+      # url hash
+      "http://foo.bar/FAQ#3"       => '<a class="external" href="http://foo.bar/FAQ#3">http://foo.bar/FAQ#3</a>',
     }
     @project = Project.find(1)
     to_test.each { |text, result| assert_equal "<p>#{result}</p>", textilizable(text) }
@@ -149,6 +151,14 @@ class ApplicationHelperTest < HelperTestCase
     to_test.each { |text, result| assert_equal result, textilizable(text) }
   end
   
+  def test_allowed_html_tags
+    to_test = {
+      "<pre>preformatted text</pre>" => "<pre>preformatted text</pre>",
+      "<notextile>no *textile* formatting</notextile>" => "no *textile* formatting",
+    }
+    to_test.each { |text, result| assert_equal result, textilizable(text) }
+  end
+  
   def test_wiki_links_in_tables
     to_test = {"|Cell 11|Cell 12|Cell 13|\n|Cell 21|Cell 22||\n|Cell 31||Cell 33|" => 
                  '<tr><td>Cell 11</td><td>Cell 12</td><td>Cell 13</td></tr>' +
@@ -174,6 +184,34 @@ class ApplicationHelperTest < HelperTestCase
   def test_wiki_horizontal_rule
     assert_equal '<hr />', textilizable('---')
     assert_equal '<p>Dashes: ---</p>', textilizable('Dashes: ---')
+  end
+  
+  def test_table_of_content
+    raw = <<-RAW
+{{toc}}
+
+h1. Title
+
+Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Maecenas sed libero.
+
+h2. Subtitle
+
+Nullam commodo metus accumsan nulla. Curabitur lobortis dui id dolor.
+
+h2. Subtitle with %{color:red}red text%
+
+h1. Another title
+
+RAW
+
+    expected = '<div class="toc">' +
+               '<a href="#1" class="heading1">Title</a>' +
+               '<a href="#2" class="heading2">Subtitle</a>' + 
+               '<a href="#3" class="heading2">Subtitle with red text</a>' +
+               '<a href="#4" class="heading1">Another title</a>' +
+               '</div>'
+               
+    assert textilizable(raw).include?(expected)
   end
   
   def test_macro_hello_world
