@@ -97,7 +97,11 @@ task :setup_dirs do
     mkdir #{shared_path}/mail 2>/dev/null || true; \
     ln -s #{shared_path}/cache #{latest_release}/tmp/; \
     ln -s #{shared_path}/sessions #{latest_release}/tmp/; \
-    ln -s #{shared_path}/mail #{latest_release}/tmp/
+    ln -s #{shared_path}/mail #{latest_release}/tmp/;
+
+    rm #{latest_release}/files/delete.me && 
+      rmdir  #{latest_release}/files &&
+      ln -s #{shared_path}/files #{latest_release}/files
   CMD
 end
 after 'deploy:update_code', :setup_dirs
