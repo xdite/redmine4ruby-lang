@@ -180,7 +180,7 @@ module IssuesHelper
       ["#{list.name} in #{ll(list.locale.to_sym, :general_lang_name)}", list.id]
     }
     default_list =
-      @issue.mailing_list || @project.mailing_lists.find(:first, :conditions => ['locale = ?', current_language])
+      @issue.mailing_list || @project.mailing_lists.find(:first, :conditions => ['locale = ?', current_language.to_s])
     default_list &&= default_list.id
     return form.select(:mailing_list_id, choices, :required => true, :selected => default_list)
   end
