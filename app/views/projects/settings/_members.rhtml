@@ -8,6 +8,7 @@
 <table class="list">
 	<thead>
 	  <th><%= l(:label_user) %></th>
+	  <th><%= l(:field_mail) %></th>
 	  <th><%= l(:label_role) %></th>
 	  <th style="width:15%"></th>
 	</thead>
@@ -15,7 +16,8 @@
 	<% members.each do |member| %>
 	<% next if member.new_record? %>
 	<tr class="<%= cycle 'odd', 'even' %>">
-	<td><%= member.name %></td>
+	<td><%=h member.name %></td>
+	<td><%=h member.user.mail %></td>
     <td align="center">
     <% if authorize_for('members', 'edit') %>
       <% remote_form_for(:member, member, :url => {:controller => 'members', :action => 'edit', :id => member}, :method => :post) do |f| %>
@@ -41,7 +43,7 @@
 <% if authorize_for('members', 'new') && !users.empty? %>
   <% remote_form_for(:member, @member, :url => {:controller => 'members', :action => 'new', :id => @project}, :method => :post) do |f| %>
     <p><label for="member_user_id"><%=l(:label_member_new)%></label><br />
-    <%= f.select :user_id, users.collect{|user| [user.name, user.id]} %>
+    <%= f.select :user_id, users.collect{|user| ["#{user.name} <#{user.mail}>", user.id]} %>
     <%= l(:label_role) %>: <%= f.select :role_id, roles.collect{|role| [role.name, role.id]}, :selected => nil %>
     <%= submit_tag l(:button_add) %></p>
   <% end %>
