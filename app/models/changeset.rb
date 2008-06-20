@@ -120,6 +120,10 @@ class Changeset < ActiveRecord::Base
         end
       end
     end
+
+    if fix_status
+      referenced_issues += recognize_issues_and_immediately_close(fix_status, done_ratio)
+    end
     
     self.issues = referenced_issues.uniq
   end
@@ -142,5 +146,36 @@ class Changeset < ActiveRecord::Base
   # Returns the next changeset
   def next
     @next ||= Changeset.find(:first, :conditions => ['id > ? AND repository_id = ?', self.id, self.repository_id], :order => 'id ASC')
+  end
+
+  private
+  MAX_SUBJECT_LENGTH = 100
+  def recognize_issues_and_immediately_close(fix_status, done_ratio)
+    project = repository.project
+    ml = project.mailing_lists.find(:first, :conditions => ['locale = ?', Setting.default_language.to_s])
+    trackers = project.trackers
+    tracker_names = trackers.map{|tr| Regexp.escape(tr.name)}.join('|')
+
+    created_issues = []
+    comments.scan(/\[(#{tracker_names})\](.*)/) do |tracker, message|
+      message.strip!
+      short_message = message.length < MAX_SUBJECT_LENGTH ? message : "#{message[0, MAX_SUBJECT_LENGTH-3]}...}"
+      user = committer_user || User.anonymous
+      tracker = project.trackers.find_by_name(tracker)
+      issue = Issue.new :project => project, :tracker => tracker, :author => user,
+        :start_date => Date.today, :assigned_to => committer_user, :mailing_list => ml,
+        :subject => short_message, :description => message
+      issue.status = fix_status
+      issue.done_ratio = done_ratio if done_ratio
+
+      csettext = "r#{self.revision}"
+      if self.scmid && (! (csettext =~ /^r[0-9]+$/))
+        csettext = "commit:\"#{self.scmid}\""
+      end
+      issue.save!
+      Mailer.deliver_issue_add(issue) if Setting.notified_events.include?('issue_added')
+      created_issues << issue
+    end
+    return created_issues
   end
 end

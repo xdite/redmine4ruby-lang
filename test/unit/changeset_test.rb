@@ -19,7 +19,7 @@ require File.dirname(__FILE__) + '/../test_helper'
 
 class ChangesetTest < Test::Unit::TestCase
   fixtures :projects, :repositories, :issues, :issue_statuses, :changesets, :changes, :issue_categories, :enumerations, :custom_fields, :custom_values, :users, :members, :trackers
-  fixtures :mailing_lists, :mailing_list_trackings
+  fixtures :mailing_lists, :mailing_list_trackings, :projects_trackers
 
   def setup
   end
@@ -73,6 +73,29 @@ class ChangesetTest < Test::Unit::TestCase
       assert_equal 100, fixed.done_ratio
     end
     assert !issues(:not_fixed1).reload.closed?
+  end
+
+  def test_register_issue_and_close_immediately
+    Setting.commit_fix_status_id = IssueStatus.find(:first, :conditions => ["is_closed = ?", true]).id
+    Setting.commit_fix_done_ratio = 100
+    Setting.commit_ref_keywords = 'see'
+    Setting.commit_fix_keywords = '*'
+    Enumeration.find_by_opt_and_name('IPRI', 'Normal').update_attribute(:is_default, true)
+    
+    c = Changeset.new(:repository => issues(:not_fixed1).project.repository,
+                      :committed_on => Time.now,
+                      :comments => <<-EOS)
+* foo.c (function_foo): [Feature request] Foo#bar should be blahblahblah.
+* bar.c (function_bar): [Bug] Bar#baz caused SEGV. 
+                      EOS
+    c.scan_comment_for_issue_ids
+    c.issues.sort!{|x,y| x.id <=> y.id}
+    
+    assert_equal 2, c.issue_ids.length
+    assert_equal "Foo#bar should be blahblahblah.", c.issues[0].description
+    assert_equal trackers(:feature).id, c.issues[0].tracker_id
+    assert_equal "Bar#baz caused SEGV.", c.issues[1].description
+    assert_equal trackers(:bug).id, c.issues[1].tracker_id
   end
 
   def test_previous
